@@ -161,3 +161,24 @@
   sizes="180x180"
 />
 ```
+
+## Service worker
+
+### service Worker lifeCycle
+
+1. Installation **( service worker will only install if either sw file change or there is first time that install it )** -> emit install event
+2. Activation **( service worker will only activated when no other service worker instance is running )** -> emit activate event
+3. Idle
+4. Terminate **( service worker will enter idle step again if triggered by an event then back to terminate phase again )**
+
+### Register the serviceWorker
+
+```js
+if ("serviceWorker" in navigator)
+  window.addEventListener("load", () =>
+    navigator.serviceWorker
+      .register("sw.js")
+      .then(reg => console.info(reg), { scope: "/help/" })
+      .catch(err => console.error(err))
+  );
+```

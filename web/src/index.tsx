@@ -14,3 +14,15 @@ function App() {
 
 const rootElement = document.getElementById("root");
 render(<App />, rootElement);
+
+if ("serviceWorker" in navigator)
+  window.addEventListener("load", () =>
+    navigator.serviceWorker
+      .register("sw.js")
+      .then(() => {
+        console.log("REGISTERED");
+      })
+      .catch(err => {
+        console.error(err);
+      })
+  );
