@@ -1,0 +1,59 @@
+{
+  "short_name": "IG",
+  "name": "IG_shortName",
+
+  "icons": [
+    {
+      "src": "/icons/app-icon-48x48.png",
+      "type": "image/png",
+      "sizes": "48x48"
+    },
+    {
+      "src": "/icons/app-icon-96x96.png",
+      "type": "image/png",
+      "sizes": "96x96"
+    },
+    {
+      "src": "/icons/app-icon-144x144.png",
+      "type": "image/png",
+      "sizes": "144x144"
+    },
+    {
+      "src": "/icons/app-icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icons/app-icon-256x256.png",
+      "type": "image/png",
+      "sizes": "256x256"
+    },
+    {
+      "src": "/icons/app-icon-384x384.png",
+      "type": "image/png",
+      "sizes": "384x384"
+    },
+    {
+      "src": "/icons/app-icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+
+  "start_url": "/",
+
+  "background_color": "#fafafa",
+
+  "display": "standalone",
+
+  "orientation": "portrait-primary",
+
+  "scope": ".",
+
+  "theme_color": "#3367D6",
+
+  "categories": ["books", "education", "medical"],
+  "description": "Awesome application that will help you achieve your dreams.",
+  "dir": "ltr",
+  "lang": "en-US"
+}
