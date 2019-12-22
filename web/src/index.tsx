@@ -42,11 +42,4 @@ function App() {
 const rootElement = document.getElementById("root");
 render(<App />, rootElement);
 
-<<<<<<< HEAD
 serviceWorker.register();
-=======
-if ("serviceWorker" in navigator)
-  window.addEventListener("load", () =>
-    navigator.serviceWorker.register("sw.js")
-  );
->>>>>>> a6eb72d46dbc414a2fce2c5f985e4ab160394c7f
