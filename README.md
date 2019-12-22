@@ -182,3 +182,75 @@ if ("serviceWorker" in navigator)
       .catch(err => console.error(err))
   );
 ```
+
+### Cache [ reference ](https://developer.mozilla.org/en-US/docs/Web/API/Cache)
+
+- `Cache.match(request, options)`
+  Returns a Promise that resolves to the response associated with the first matching request in the Cache object.
+- `Cache.matchAll(request, options)`
+  Returns a Promise that resolves to an array of all matching requests in the Cache object.
+- `Cache.add(request)`
+  Takes a URL, retrieves it and adds the resulting response object to the given cache. This is functionally equivalent to calling fetch(), then using put() to add the results to the cache.
+- `Cache.addAll(requests)`
+  Takes an array of URLs, retrieves them, and adds the resulting response objects to the given cache.
+- `Cache.put(request, response)`
+  Takes both a request and its response and adds it to the given cache.
+- `Cache.delete(request, options)`
+  Finds the Cache entry whose key is the request, returning a Promise that resolves to true if a matching Cache entry is found and deleted. If no Cache entry is found, the promise resolves to false.
+- `Cache.keys(request, options)`
+  Returns a Promise that resolves to an array of Cache keys.
+
+#### PreCaching
+
+```js
+self.addEventListener("install", ev => {
+  ev.waitUntil(caches.open("static")).then(cache => {
+    cache.add("/src/img.png"); // the key is request obj and not a string
+  });
+});
+
+self.addEventListener("fetch", ev => {
+  caches.match(ev.request).then(res => {
+    // if no request match res = null
+    if (res) return res;
+
+    return fetch(ev.request);
+  });
+});
+```
+
+#### Dynamic caching
+
+```js
+self.addEventListener("fetch", ev => {
+  caches.match(ev.request).then(res => {
+    if (res) return res;
+
+    return fetch(ev.res).then(response => {
+      // make sure to return cache and response at the end
+      return caches.open("dynamic").then(cache => {
+        cache.put(ev.request.url, response.clone); // since response is consomme we can use it once so we cache it's clone
+
+        return response;
+      });
+    });
+  });
+});
+```
+
+#### Cleanup old caches
+
+```js
+self.addEventListener("activate", ev => {
+  ev.waitUntil(
+    caches.keys().then(keyList => {
+      return Promise.all(
+        keyList.map(key => {
+          if (key !== "static-v2" && key !== "dynamic-v2")
+            return caches.delete(key);
+        })
+      );
+    })
+  );
+});
+```
