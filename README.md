@@ -182,3 +182,56 @@ if ("serviceWorker" in navigator)
       .catch(err => console.error(err))
   );
 ```
+
+### Add to home screen
+
+In order for a user to be able to install your Progressive Web App, it needs to meet the following criteria:
+
+- The web app is not already installed.
+- and prefer_related*applications is not true. \_manifest.json*
+- Includes a web app manifest that includes:
+  - short_name or name
+  - icons must include a 192px and a 512px sized icons
+  - start_url
+  - display must be one of: fullscreen, standalone, or minimal-ui
+  - Served over HTTPS (required for service workers)
+  - Has registered a service worker with a fetch event handler
+
+### Add to home screen Manually prompt
+
+The `beforeinstallprompt` will be fired by chrome right before prompting
+
+./main.js
+
+```js
+let deferredPrompt;
+
+window.addEventListener("beforeinstallprompt", event => {
+  event.preventDefault(); // preventing browser from showing the prompt
+
+  deferredPrompt = event;
+
+  return false;
+});
+
+// e.g. showing The prompt whenever the user clicked button
+
+const btn = document.getElementById("btn");
+
+btn.addEventListener("click", () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt(); // SHOWING the prompt
+
+    // listening to userChoice
+    deferredPrompt.userChoice.then(choiceResult => {
+      if (choiceResult.outcome === "dismissed") {
+        console.info("User cancelled the installation");
+      } else {
+        console.info("User accept the installation");
+      }
+
+      deferredPrompt = null;
+    });
+  }
+});
+```
