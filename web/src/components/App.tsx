@@ -18,19 +18,17 @@ export const App = (_prop: RouteComponentProps) => {
       })
       .then(res => (fetchImg.current.src = res.image));
 
-    caches.open(process.env.REACT_APP_DYNAMIC_CACHE).then(cache =>
-      cache
-        .match(URL)
-        .then(res => {
-          if (fetchImgLoaded.current && res) return res.json();
-        })
-        .then(res => {
-          if (res) {
-            fetchImg.current.src = res.image;
-          }
-        })
-    );
-  }, []);
+    caches
+      .match(URL)
+      .then(res => {
+        if (res && !fetchImgLoaded.current) return res.json();
+      })
+      .then(res => {
+        if (res) {
+          fetchImg.current.src = res.image;
+        }
+      });
+  }, [URL]);
 
   return (
     <div className="app">

@@ -1,11 +1,12 @@
-const DYNAMIC_CACHE = window.env.REACT_APP_DYNAMIC_CACHE;
-const STATIC_CACHE = window.env.REACT_APP_STATIC_CACHE;
-const APIS = JSON.parse(window.env.REACT_APP_APIS);
+const DYNAMIC_CACHE = "dynamic-cache-v1";
+const STATIC_CACHE = "static-cache-v1";
+
+const APIs = { rickandmortyapi: "https://rickandmortyapi.com/api/character/2" };
+
 const STATIC_DATA = [
   "/",
   "/fallback.html",
   "/static/js/1.chunk.js",
-  "/favicon.ico",
   "/static/js/bundle.js",
   "/static/js/main.chunk.js",
   "https://fonts.googleapis.com/css?family=Ma+Shan+Zheng&display=swap"
@@ -33,7 +34,7 @@ self.addEventListener("activate", ev => {
 });
 
 self.addEventListener("fetch", ev => {
-  if (ev.request.url.indexOf(APIS.rickandmortyapi) > -1) {
+  if (ev.request.url.indexOf(APIs.rickandmortyapi) > -1) {
     ev.respondWith(
       caches.open(DYNAMIC_CACHE).then(cache =>
         fetch(ev.request).then(response => {
@@ -42,13 +43,6 @@ self.addEventListener("fetch", ev => {
         })
       )
     );
-  } else if (
-    ev.respondWith(
-      new RegExp("\\b" + STATIC_DATA.join("\\b|b\\") + "\\b").test(
-        ev.request.url
-      )
-    )
-  ) {
   } else {
     ev.respondWith(
       caches.match(ev.request).then(response => {
@@ -63,10 +57,9 @@ self.addEventListener("fetch", ev => {
               });
             })
             .catch(() => {
-              return caches.open(STATIC_CACHE).then(cache => {
-                if (ev.request.url.indexOf("/help"))
-                  return cache.match("/fallback.html");
-              });
+              return caches
+                .open(STATIC_CACHE)
+                .then(cache => cache.match("/fallback.html"));
             });
         }
       })

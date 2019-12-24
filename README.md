@@ -438,13 +438,6 @@ self.addEventListener(ev => {
         })
       )
     );
-  } else if (
-    ev.respondWith(
-      new RegExp("\\b" + STATIC_DATA.join("\\b|\\b") + "\\b").test(
-        ev.request.url
-      )
-    )
-  ) {
   } else {
     ev.respondWith(
       caches.match(ev.request).then(res => {
@@ -457,10 +450,9 @@ self.addEventListener(ev => {
             });
           })
           .catch(err => {
-            return caches.open("static", cache => {
-              if (request.url.indexOf("/help"))
-                return cache.match("fallback.html");
-            });
+            return caches
+              .open("static")
+              .then(cache => cache.match("fallback.html"));
           });
       })
     );
