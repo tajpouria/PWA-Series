@@ -1,45 +1,23 @@
 import * as React from "react";
 import { render } from "react-dom";
+import { Router } from "@reach/router";
+
 
 import "./styles.css";
-import imgSmall from "./img/img-small.png";
-import imgMedium from "./img/img-medium.png";
-import imgLarge from "./img/img-large.png";
-
 import * as serviceWorker from "./serviceWorker";
 
-function App() {
-  const fetchImg = React.useRef<HTMLImageElement>({ src: "" } as any);
+import { App } from "./components/App";
+import { Help } from "./components/Help";
 
-  React.useEffect(() => {
-    fetch("https://rickandmortyapi.com/api/character/2")
-      .then(res => res.json())
-      .then(res => {
-        fetchImg.current.src = res.image;
-      });
-  });
-
-  return (
-    <div className="app">
-      <figure className="app__img-container">
-        <figcaption className="app__img-caption">Static image</figcaption>
-        <img
-          srcSet={`${imgSmall} 192w, ${imgMedium} 265w, ${imgLarge} 384w`}
-          sizes="(max-width: 900px) 20vw, (max-width: 600px) 30vw, 300px"
-          src={imgMedium}
-          alt="statics"
-          className="app__img"
-        />
-      </figure>
-      <figure className="app__img-container">
-        <figcaption className="app__img-caption">Fetched image</figcaption>
-        <img alt="fetch" ref={fetchImg} className="app__img" />
-      </figure>
-    </div>
-  );
-}
+require("dotenv").config();
 
 const rootElement = document.getElementById("root");
-render(<App />, rootElement);
+render(
+  <Router>
+    <App path="/" />
+    <Help path="/help" />
+  </Router>,
+  rootElement
+);
 
 serviceWorker.register();

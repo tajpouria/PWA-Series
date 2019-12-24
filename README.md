@@ -255,6 +255,8 @@ btn.addEventListener("click", () => {
 
 #### PreCaching
 
+./public/sw.js
+
 ```js
 self.addEventListener("install", ev => {
   ev.waitUntil(caches.open("static")).then(cache => {
@@ -272,22 +274,46 @@ self.addEventListener("fetch", ev => {
 
 #### Dynamic caching
 
+./public/sw.js
+
 ```js
 self.addEventListener("fetch", ev => {
-  caches.match(ev.request).then(res => {
-    if (res) return res;
-    return fetch(ev.res).then(response => {
-      // make sure to return cache and response at the end
-      return caches.open("dynamic").then(cache => {
-        cache.put(ev.request.url, response.clone); // since response is consomme we can use it once so we cache it's clone
-        return response;
+  ev.respondWith(
+    caches.match(ev.request).then(res => {
+      if (res) return res;
+      return fetch(ev.res).then(response => {
+        // make sure to return cache and response at the end
+        return caches.open("dynamic").then(cache => {
+          cache.put(ev.request.url, response.clone); // since response is consomme we can use it once so we cache it's clone
+          return response;
+        });
       });
+    })
+  );
+});
+```
+
+#### Manual caching
+
+e.g. cache an article whenever user clicked the save button
+
+./app.ts
+
+```js
+saveBtn.addEventListener("click", () => {
+  // caches can be access anywhere in application and NOT just service worker
+  if ("caches" in window) {
+    caches.open("user-save", cache => {
+      cache.add("http://bin.org/article/1");
+      cache.add("/img/img.jpg");
     });
-  });
+  }
 });
 ```
 
 #### Cleanup old caches
+
+./public/sw.js
 
 ```js
 self.addEventListener("activate", ev => {
@@ -301,5 +327,143 @@ self.addEventListener("activate", ev => {
       );
     })
   );
+});
+```
+
+#### Fallback on fetch.catch
+
+```js
+self.addEventListener("fetch", ev => {
+  ev.respondWith(
+    caches.match(ev.request).then(res => {
+      if (res) return res;
+      return fetch(ev.res)
+        .then(response => {
+          return caches.open("dynamic").then(cache => {
+            cache.put(ev.request.url, response.clone);
+            return response;
+          });
+        })
+        .catch(err => {
+          return caches.open("static", cache => {
+            // make sure to return
+
+            // check and return fallback for specific pages
+            if (request.url.indexOf("/help"))
+              return cache.match("fallback.html"); // make sure to cache fallback in static cache before returning it
+          });
+        });
+    })
+  );
+});
+```
+
+#### Catching strategies
+
+1. Catch-only
+
+./public/sw.js
+
+```js
+self.addEventListener("fetch", ev => {
+  ev.respondWith(caches.match(ev.request).then(response => response));
+});
+```
+
+2. Network-only
+
+./public/sw.js
+
+```js
+self.addEventListener("fetch", ev => {
+  ev.respondWith(fetch(ev.request));
+});
+```
+
+3. Network-cache
+
+./public/sw.js
+
+```js
+self.addEventListener('fetch', ev => {
+  ev.respondWith(fetch(ev.request).then(response => {
+    caches.open('dynamic').then(cache => {
+      cache.put(ev.request.url , response.clone())
+      return response
+    })
+  }).catch(() => caches.match(ev.request).then(response => {
+    if(response) return response
+
+    return caches.open('static').then(cache => {
+      if (request.url.indexOf("/help"))
+      return cache.match('/fallback.html')
+  }))
+}))
+```
+
+4. **Cache-network**
+
+./app.ts
+
+```tsx
+useEffect(() => {
+  let fetchDataLoaded = false;
+  fetch(URL)
+    .then(response => {
+      fetchDataLoaded = true;
+      return response.json();
+    })
+    .then(res => setState(res));
+
+  caches
+    .matchAll(URL)
+    .then(response => {
+      if (!fetchDateLoaded) return response.json(); // check to not overriding if date is currently fetched
+    })
+    .then(res => setState(res));
+}, []);
+```
+
+./public/sw.js
+
+```js
+self.addEventListener(ev => {
+  // for a specific url doing _fetch-first-then-catch_ strategy and for rest of the pages doing regular
+  if (ev.request.url.indexOf(URL) > -1) {
+    ev.respondWith(
+      caches.open("dynamic").then(cache =>
+        fetch(ev.request).then(response => {
+          cache.put(ev.request.url, response.clone());
+          return response;
+        })
+      )
+    );
+  } else if (
+    ev.respondWith(
+      new RegExp("\\b" + STATIC_DATA.join("\\b|\\b") + "\\b").test(
+        ev.request.url
+      )
+    )
+  ) {
+  } else {
+    ev.respondWith(
+      caches.match(ev.request).then(res => {
+        if (res) return res;
+        return fetch(ev.res)
+          .then(response => {
+            return caches.open("dynamic").then(cache => {
+              cache.put(ev.request.url, response.clone);
+              return response;
+            });
+          })
+          .catch(err => {
+            return caches.open("static", cache => {
+              if (request.url.indexOf("/help"))
+                return cache.match("fallback.html");
+            });
+          });
+      })
+    );
+  }
 });
 ```
