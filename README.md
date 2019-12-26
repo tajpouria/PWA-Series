@@ -429,33 +429,81 @@ useEffect(() => {
 ```js
 self.addEventListener(ev => {
   // for a specific url doing _fetch-first-then-catch_ strategy and for rest of the pages doing regular
-  if (ev.request.url.indexOf(URL) > -1) {
+  if (ev.request.url.includes(APIs.rickandmortyapi)) {
     ev.respondWith(
-      caches.open("dynamic").then(cache =>
+      caches.open(DYNAMIC_CACHE).then(cache =>
         fetch(ev.request).then(response => {
           cache.put(ev.request.url, response.clone());
           return response;
         })
       )
     );
+  } else if (STATIC_DATA.find(req => req === ev.request.url)) {
+    ev.respondWith(
+      caches.open(STATIC_CACHE).then(cache => cache.match(ev.request))
+    );
   } else {
     ev.respondWith(
-      caches.match(ev.request).then(res => {
-        if (res) return res;
-        return fetch(ev.res)
-          .then(response => {
-            return caches.open("dynamic").then(cache => {
-              cache.put(ev.request.url, response.clone);
-              return response;
-            });
-          })
-          .catch(err => {
-            return caches
-              .open("static")
-              .then(cache => cache.match("fallback.html"));
+      caches.match(ev.request).then(response => {
+        if (response) {
+          return response;
+        }
+
+        return fetch(ev.request)
+          .then(res =>
+            caches.open(DYNAMIC_CACHE).then(cache => {
+              cache.put(ev.request.url, res.clone());
+              return res;
+            })
+          )
+          .catch(() => {
+            if (request.headers.get("accept").includes("text/html")) {
+              return caches
+                .open(STATIC_CACHE)
+                .then(cache => cache.match("/fallback.html"));
+            }
           });
       })
     );
+  }
+});
+```
+
+#### Recursively cleaning the cache
+
+./public/sw.js
+
+```js
+const trimCache = (cacheName, maxItem) => {
+  caches.open(cacheName).then(cache =>
+    cache.keys().then(keyList => {
+      if (keyList.length > maxItem) {
+        cache.delete(keyList[0]).then(() => trimCache(cacheName, maxItem));
+      }
+    })
+  );
+};
+
+self.addEventListener("fetch", () => {
+  // ...
+  trimCache(CACHE_DYNAMIC, 10);
+  cache.put(ev.request, response.clone());
+  // ...
+});
+```
+
+#### UnRegister the service worker
+
+UnRegistering a service worker will automatically **flushes the cache**
+
+./main.js
+
+```js
+document.getElementById("btn").addEventListener("click", () => {
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker
+      .getRegistrations()
+      .then(registrations => registration.map(r => r.register()));
   }
 });
 ```

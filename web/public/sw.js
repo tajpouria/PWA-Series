@@ -1,5 +1,5 @@
-const DYNAMIC_CACHE = "dynamic-cache-v1";
-const STATIC_CACHE = "static-cache-v1";
+const DYNAMIC_CACHE = "dynamic-cache-v2";
+const STATIC_CACHE = "static-cache-v2";
 
 const APIs = { rickandmortyapi: "https://rickandmortyapi.com/api/character/2" };
 
@@ -11,6 +11,15 @@ const STATIC_DATA = [
   "/static/js/main.chunk.js",
   "https://fonts.googleapis.com/css?family=Ma+Shan+Zheng&display=swap"
 ];
+
+const trimCache = async (cacheName, maxItem) => {
+  const cache = await caches.open(cacheName);
+  const keys = await cache.keys();
+  if (keys.length > maxItem) {
+    await cache.delete(keys[0]);
+    trimCache(cacheName, maxItem);
+  }
+};
 
 self.addEventListener("install", ev => {
   ev.waitUntil(
@@ -34,34 +43,42 @@ self.addEventListener("activate", ev => {
 });
 
 self.addEventListener("fetch", ev => {
-  if (ev.request.url.indexOf(APIs.rickandmortyapi) > -1) {
+  if (ev.request.url.includes(APIs.rickandmortyapi)) {
     ev.respondWith(
       caches.open(DYNAMIC_CACHE).then(cache =>
         fetch(ev.request).then(response => {
+          trimCache(DYNAMIC_CACHE, 10);
           cache.put(ev.request.url, response.clone());
           return response;
         })
       )
+    );
+  } else if (STATIC_DATA.find(req => req === ev.request.url)) {
+    ev.respondWith(
+      caches.open(STATIC_CACHE).then(cache => cache.match(ev.request))
     );
   } else {
     ev.respondWith(
       caches.match(ev.request).then(response => {
         if (response) {
           return response;
-        } else {
-          return fetch(ev.request)
-            .then(res => {
-              return caches.open(DYNAMIC_CACHE).then(cache => {
-                cache.put(ev.request.url, res.clone());
-                return res;
-              });
+        }
+
+        return fetch(ev.request)
+          .then(res =>
+            caches.open(DYNAMIC_CACHE).then(cache => {
+              trimCache(DYNAMIC_CACHE, 10);
+              cache.put(ev.request.url, res.clone());
+              return res;
             })
-            .catch(() => {
+          )
+          .catch(() => {
+            if (request.headers.get("accept").includes("text/html")) {
               return caches
                 .open(STATIC_CACHE)
                 .then(cache => cache.match("/fallback.html"));
-            });
-        }
+            }
+          });
       })
     );
   }
