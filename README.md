@@ -507,3 +507,7 @@ document.getElementById("btn").addEventListener("click", () => {
   }
 });
 ```
+
+### IndexedDB
+
+A transactional key-value DB in the browser that can access **both synchronies or ASynchronies**: the transactional means if **one action** within tha transaction **fails**, **none** of the action of that transition will applied.

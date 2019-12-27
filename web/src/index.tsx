@@ -2,7 +2,6 @@ import * as React from "react";
 import { render } from "react-dom";
 import { Router } from "@reach/router";
 
-
 import "./styles.css";
 import * as serviceWorker from "./serviceWorker";
 
@@ -20,4 +19,4 @@ render(
   rootElement
 );
 
-serviceWorker.register();
+// serviceWorker.register();

@@ -1,34 +1,43 @@
 import * as React from "react";
 import { Link, RouteComponentProps } from "@reach/router";
 
+import { Posts, Post } from "../typing/dynamicData";
+import { Card } from "./Card";
+
 import imgMedium from "../img/img-medium.png";
 import imgLarge from "../img/img-large.png";
 import imgSmall from "../img/img-small.png";
 
 export const App = (_prop: RouteComponentProps) => {
-  const fetchImg = React.useRef<HTMLImageElement>({ src: "" } as any);
   const fetchImgLoaded = React.useRef<boolean>(false);
-  const URL = JSON.parse(process.env.REACT_APP_APIS).rickandmortyapi;
+  const URL = JSON.parse(process.env.REACT_APP_APIS).posts;
+
+  const [posts, setPosts] = React.useState<Posts>({});
 
   React.useEffect(() => {
     fetch(URL)
       .then(res => {
         fetchImgLoaded.current = true;
+
         return res.json();
       })
-      .then(res => (fetchImg.current.src = res.image));
+      .then((res: Posts) => {
+        setPosts(res);
+      });
 
     caches
       .match(URL)
       .then(res => {
         if (res && !fetchImgLoaded.current) return res.json();
       })
-      .then(res => {
+      .then((res: Posts) => {
         if (res) {
-          fetchImg.current.src = res.image;
+          setPosts(res);
         }
       });
   }, [URL]);
+
+  console.log(posts);
 
   return (
     <div className="app">
@@ -47,10 +56,13 @@ export const App = (_prop: RouteComponentProps) => {
           className="app__img"
         />
       </figure>
-      <figure className="app__img-container">
-        <figcaption className="app__img-caption">Fetched image</figcaption>
-        <img alt="fetch" ref={fetchImg} className="app__img" />
-      </figure>
+      {Object.values(posts).length ? (
+        Object.values(posts).map((post: Post) => (
+          <Card key={post.id}>{post}</Card>
+        ))
+      ) : (
+        <small className="small small--primary">There is so quite here!</small>
+      )}
     </div>
   );
 };
