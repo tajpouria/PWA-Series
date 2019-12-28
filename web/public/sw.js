@@ -1,7 +1,26 @@
 const DYNAMIC_CACHE = "dynamic-cache-v2";
 const STATIC_CACHE = "static-cache-v2";
 
-const APIs = { rickandmortyapi: "https://rickandmortyapi.com/api/character/2" };
+const POSTS_OBJECT_STORE = "POSTS_OBJECT_STORE";
+
+self.importScripts(
+  "https://cdn.jsdelivr.net/npm/idb@4.0.5/build/iife/with-async-ittr-min.js"
+);
+
+const dbPromise = idb.openDB("POSTS_STORE", 1, {
+  upgrade(db) {
+    console.log(db);
+    if (!db.objectStoreNames.contains(POSTS_OBJECT_STORE)) {
+      console.log("creating object store ");
+      db.createObjectStore(POSTS_OBJECT_STORE, { keyPath: "id" });
+    }
+  }
+});
+
+const APIs = {
+  rickandmortyapi: "https://unpkg.com/idb@4.0.5/build/iife/index-min.js",
+  posts: "https://pwa-gram-7c869.firebaseio.com/posts.json"
+};
 
 const STATIC_DATA = [
   "/",
@@ -9,7 +28,8 @@ const STATIC_DATA = [
   "/static/js/1.chunk.js",
   "/static/js/bundle.js",
   "/static/js/main.chunk.js",
-  "https://fonts.googleapis.com/css?family=Ma+Shan+Zheng&display=swap"
+  "https://fonts.googleapis.com/css?family=Ma+Shan+Zheng&display=swap",
+  "https://cdn.jsdelivr.net/npm/idb@4.0.5/build/iife/with-async-ittr-min.js"
 ];
 
 const trimCache = async (cacheName, maxItem) => {
@@ -43,15 +63,21 @@ self.addEventListener("activate", ev => {
 });
 
 self.addEventListener("fetch", ev => {
-  if (ev.request.url.includes(APIs.rickandmortyapi)) {
+  if (ev.request.url.includes(APIs.posts)) {
     ev.respondWith(
-      caches.open(DYNAMIC_CACHE).then(cache =>
-        fetch(ev.request).then(response => {
-          trimCache(DYNAMIC_CACHE, 10);
-          cache.put(ev.request.url, response.clone());
-          return response;
-        })
-      )
+      fetch(ev.request).then(async response => {
+        const clonedResponse = response.clone();
+        clonedResponse.json().then(async data => {
+          const db = await dbPromise;
+          const tx = db.transaction(POSTS_OBJECT_STORE, "readwrite");
+          const store = tx.objectStore(POSTS_OBJECT_STORE);
+
+          store.put(data);
+
+          return tx.complete;
+        });
+        return response;
+      })
     );
   } else if (STATIC_DATA.find(req => req === ev.request.url)) {
     ev.respondWith(

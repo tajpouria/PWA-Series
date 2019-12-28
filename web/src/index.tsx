@@ -19,4 +19,4 @@ render(
   rootElement
 );
 
-// serviceWorker.register();
+serviceWorker.register();

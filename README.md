@@ -511,3 +511,53 @@ document.getElementById("btn").addEventListener("click", () => {
 ### IndexedDB
 
 A transactional key-value DB in the browser that can access **both synchronies or ASynchronies**: the transactional means if **one action** within tha transaction **fails**, **none** of the action of that transition will applied.
+
+#### idb
+
+In following example we use [ idb package ](https://github.com/jakearchibald/idb) to interact with indexedDB
+
+- import external script in serviceWorker
+
+```js
+self.importScripts(
+  "https://cdn.jsdelivr.net/npm/idb@4.0.5/build/iife/with-async-ittr-min.js"
+);
+```
+
+- idb usage :
+
+  1.  open a database and object store _similar to table_
+
+  ```js
+  // (db name , db version , callback to create object store)
+  const dbPromise = idb.openDB("posts-store", 1, db => {
+    if (!db.objectStoreNames.contains("posts"))
+      db.createObjectStore("posts", { keyPath: "id" }); // using keyPath to retrieve data from objectStore
+  });
+  ```
+
+  2. open the db ,create transaction , storeData and complete transaction
+
+  ```js
+  self.addEventListener("fetch", ev => {
+    // ... in this eventListener I just shown how to store data in dataBase if you interested whole cb-function body visit https://github.com/tajpouria/PWA-Series/blob/master/web/public/sw.js#L45
+
+    dbPromise.then(db => {
+      fetch(ev.request).then(res => {
+        clonedRes = res.clone();
+        return clonedRes.json().then(data => {
+          dbPromise.then(db => {
+            const tx = db.transaction("posts", "readwrite");
+            const store = tx.objectStore("posts");
+
+            store.put(data);
+            return tx.complete; // complete is a property and not a method
+          });
+        });
+        return res;
+      });
+    });
+
+    // ...
+  });
+  ```

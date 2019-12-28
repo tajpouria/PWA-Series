@@ -37,8 +37,6 @@ export const App = (_prop: RouteComponentProps) => {
       });
   }, [URL]);
 
-  console.log(posts);
-
   return (
     <div className="app">
       <nav className="nav nav--primary">
@@ -46,8 +44,9 @@ export const App = (_prop: RouteComponentProps) => {
           Help
         </Link>
       </nav>
+
       <figure className="app__img-container">
-        <figcaption className="app__img-caption">Static image</figcaption>
+        <figcaption className="app__img-caption">IG</figcaption>
         <img
           srcSet={`${imgSmall} 192w, ${imgMedium} 265w, ${imgLarge} 384w`}
           sizes="(max-width: 900px) 20vw, (max-width: 600px) 30vw, 300px"
@@ -56,13 +55,18 @@ export const App = (_prop: RouteComponentProps) => {
           className="app__img"
         />
       </figure>
-      {Object.values(posts).length ? (
-        Object.values(posts).map((post: Post) => (
-          <Card key={post.id}>{post}</Card>
-        ))
-      ) : (
-        <small className="small small--primary">There is so quite here!</small>
-      )}
+
+      <div className="u-justify-center">
+        {Object.values(posts).length ? (
+          Object.values(posts).map((post: Post) => (
+            <Card key={post.id}>{post}</Card>
+          ))
+        ) : (
+          <small className="small small--primary">
+            There is so quite here!
+          </small>
+        )}
+      </div>
     </div>
   );
 };

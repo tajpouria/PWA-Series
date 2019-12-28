@@ -11,7 +11,7 @@ export const Card: React.FC<Props> = ({
   return (
     <figure className="card">
       <img src={image} alt={location} className="card__img" />
-      <figcaption className="card__img">{title}</figcaption>
+      <figcaption className="card__cap u-center-text">{title}</figcaption>
     </figure>
   );
 };
