@@ -63,7 +63,7 @@ export const App = (_prop: RouteComponentProps) => {
           ))
         ) : (
           <small className="small small--primary">
-            There is so quite here!
+            There is too quite here!
           </small>
         )}
       </div>

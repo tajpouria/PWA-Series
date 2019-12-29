@@ -99,6 +99,15 @@ body {
   width: 100%;
 }
 
+.small {
+  font-size: var(--font-default);
+  padding: 1rem;
+}
+
+.small--primary {
+  color: var(--color-primary);
+}
+
 /* UTILITIES */
 
 .u-center-text {

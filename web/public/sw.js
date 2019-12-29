@@ -9,9 +9,7 @@ self.importScripts(
 
 const dbPromise = idb.openDB("POSTS_STORE", 1, {
   upgrade(db) {
-    console.log(db);
     if (!db.objectStoreNames.contains(POSTS_OBJECT_STORE)) {
-      console.log("creating object store ");
       db.createObjectStore(POSTS_OBJECT_STORE, { keyPath: "id" });
     }
   }
@@ -72,7 +70,9 @@ self.addEventListener("fetch", ev => {
           const tx = db.transaction(POSTS_OBJECT_STORE, "readwrite");
           const store = tx.objectStore(POSTS_OBJECT_STORE);
 
-          store.put(data);
+          for (let key in data) {
+            store.put(data[key]);
+          }
 
           return tx.complete;
         });
