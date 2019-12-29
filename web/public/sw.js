@@ -1,19 +1,11 @@
 const DYNAMIC_CACHE = "dynamic-cache-v2";
 const STATIC_CACHE = "static-cache-v2";
 
-const POSTS_OBJECT_STORE = "POSTS_OBJECT_STORE";
+// self.importScripts(
+//   "https://cdn.jsdelivr.net/npm/idb@4.0.5/build/iife/with-async-ittr-min.js"
+// );
 
-self.importScripts(
-  "https://cdn.jsdelivr.net/npm/idb@4.0.5/build/iife/with-async-ittr-min.js"
-);
-
-const dbPromise = idb.openDB("POSTS_STORE", 1, {
-  upgrade(db) {
-    if (!db.objectStoreNames.contains(POSTS_OBJECT_STORE)) {
-      db.createObjectStore(POSTS_OBJECT_STORE, { keyPath: "id" });
-    }
-  }
-});
+self.importScripts("/static/js/1.chunk.js");
 
 const APIs = {
   rickandmortyapi: "https://unpkg.com/idb@4.0.5/build/iife/index-min.js",
@@ -23,6 +15,7 @@ const APIs = {
 const STATIC_DATA = [
   "/",
   "/fallback.html",
+  "/static/js/0.chunk.js",
   "/static/js/1.chunk.js",
   "/static/js/bundle.js",
   "/static/js/main.chunk.js",

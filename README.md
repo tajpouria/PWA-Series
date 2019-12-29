@@ -551,7 +551,7 @@ self.importScripts(
             const store = tx.objectStore("posts");
 
             store.put(data);
-            return tx.complete; // complete is a property and not a method
+            return tx.done; // complete is a property and not a method
           });
         });
         return res;
@@ -561,3 +561,63 @@ self.importScripts(
     // ...
   });
   ```
+
+#### Reading from idb
+
+./utilities/idb.js
+
+```js
+const addRecord = async (st, data) =>
+  dbPromise.then(db => {
+    const tx = db.transaction(st, "readwrite");
+    const store = tx.objectStore(st);
+
+    store.put(data[key]);
+
+    return tx.done;
+  });
+```
+
+./utilities/idb.js
+
+```js
+const readAllRecords = st =>
+  dbPromise.then(db => {
+    const tx = db.transaction(st, "readwrite");
+    const store = tx.objectStore(st);
+    return store.getAll();
+  });
+```
+
+#### Delete idb records
+
+- clearAllRecords
+
+./utilities/idb.js
+
+```js
+// Make sure to return the promise
+const clearAllRecords = st =>
+  dbPromise.then(db => {
+    const tx = db.transaction(st, "readwrite");
+    const store = tx.objectStore(st);
+    store.clear();
+    return tx.done;
+  });
+```
+
+- clearSingleRecord
+
+./utilities/idb.js
+
+```js
+const clearSingleRecord = (st, id) =>
+  dbPromise
+    .then(db => {
+      const tx = db.transaction(st, "readwrite");
+      const store = tx.store(st);
+      store.delete(id);
+      return tx.done;
+    })
+    .then(() => console.info("items deleted"));
+```

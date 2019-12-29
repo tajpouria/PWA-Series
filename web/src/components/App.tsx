@@ -8,6 +8,8 @@ import imgMedium from "../img/img-medium.png";
 import imgLarge from "../img/img-large.png";
 import imgSmall from "../img/img-small.png";
 
+import("../utilities/idb").then(idb => idb);
+
 export const App = (_prop: RouteComponentProps) => {
   const fetchImgLoaded = React.useRef<boolean>(false);
   const URL = JSON.parse(process.env.REACT_APP_APIS).posts;
