@@ -1,11 +1,14 @@
 const DYNAMIC_CACHE = "dynamic-cache-v2";
 const STATIC_CACHE = "static-cache-v2";
 
-// self.importScripts(
-//   "https://cdn.jsdelivr.net/npm/idb@4.0.5/build/iife/with-async-ittr-min.js"
-// );
+self.importScripts(
+  "https://cdn.jsdelivr.net/npm/idb@4.0.5/build/iife/with-async-ittr-min.js"
+);
 
-self.importScripts("/static/js/1.chunk.js");
+const POSTS_OBJECT_STORE = "POSTS_OBJECT_STORE";
+self.importScripts("./idb.js");
+
+console.log(POSTS_OBJECT_STORE);
 
 const APIs = {
   rickandmortyapi: "https://unpkg.com/idb@4.0.5/build/iife/index-min.js",

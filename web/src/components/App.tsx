@@ -8,13 +8,21 @@ import imgMedium from "../img/img-medium.png";
 import imgLarge from "../img/img-large.png";
 import imgSmall from "../img/img-small.png";
 
-import("../utilities/idb").then(idb => idb);
+import IDB from "../utilities/idb";
 
 export const App = (_prop: RouteComponentProps) => {
   const fetchImgLoaded = React.useRef<boolean>(false);
   const URL = JSON.parse(process.env.REACT_APP_APIS).posts;
 
   const [posts, setPosts] = React.useState<Posts>({});
+
+  (async () => {
+    const MyDB = new IDB("Mydb");
+
+    const user = await MyDB.createObjectStore("user", { keyPath: "id" });
+
+    await user?.set("userOne", { id: "userOne", name: "ali" });
+  })();
 
   React.useEffect(() => {
     fetch(URL)
