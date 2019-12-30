@@ -92,50 +92,71 @@ export default class IDB {
       const currentDatabase = await this.dbPromise;
       const objectStores = await this.getObjectStores();
 
+      let OpenReq = indexedDB.open(this.dataBaseName, 2);
+      OpenReq.onupgradeneeded = function(e) {
+        // @ts-ignore
+        let db = e.target.result;
+        console.log(db);
+        setTimeout(() => {
+          db.objectStoreNames.contains("myStore") ||
+            db.createObjectStore("myStore");
+        }, 3000);
+      };
+
+      // request.onerror = console.error;
+
       if (!currentDatabase.objectStoreNames.contains(objectStoreName)) {
-        if (options) {
-          this.objectStoresOptionsStore[objectStoreName] = options;
-        }
-
-        this.delete(
-          () => {
-            const dbPromise = idb.openDB(
-              this.dataBaseName,
-              this.dataBaseVersion,
-              {
-                upgrade(db) {
-                  console.log({ ...objectStores, objectStoreName });
-                  for (let key in { ...objectStores, objectStoreName }) {
-                    const objectStore =
-                      key === objectStoreName
-                        ? objectStoreName
-                        : objectStores.item(+key);
-
-                    console.log(objectStoreName);
-                    // if (
-                    //   objectStore &&
-                    //   !db.objectStoreNames.contains(objectStore) &&
-                    //   !["length", "item", "contains"].includes(key)
-                    // ) {
-                    //   db.createObjectStore(objectStore);
-                    // }
-                  }
-                }
-              }
-            );
-            this.dbPromise = dbPromise;
-          },
-          () => {
-            console.error(
-              `${REACT_IDB}: an exception on deleting ${this.dataBaseName}.`
-            );
-          },
-          () => {
-            console.error(
-              `${REACT_IDB}: ${this.dataBaseName} delete request blocked, make sure all dataBase connections are closed.`
-            );
-          }
-        );
+        // var request = window.indexedDB.open(this.dataBaseName, 4);
+        // request.onupgradeneeded = event => {
+        //   // @ts-ignore
+        //   var db = event.target.result;
+        //   var transaction = db.transaction(
+        //     [this.dataBaseName],
+        //     "versionchange"
+        //   );
+        //   var objectStore = db.createObjectStore(objectStoreName, options);
+        // };
+        // this.delete(
+        //   () => {
+        //     console.log("hello");
+        //     // this.objectStoresOptionsStore[objectStoreName] = options || {};
+        //     // const dbPromise = idb.openDB(
+        //     //   this.dataBaseName,
+        //     //   this.dataBaseVersion + 1,
+        //     //   {
+        //     //     upgrade(db) {
+        //     //       db.createObjectStore(objectStoreName, options);
+        //     //       db.close();
+        //     //       // for (let key in { ...objectStores, objectStoreName }) {
+        //     //       //   const objectStore =
+        //     //       //     key === objectStoreName
+        //     //       //       ? objectStoreName
+        //     //       //       : objectStores.item(+key);
+        //     //       //   console.log(objectStoreName);
+        //     //       //   if (
+        //     //       //     objectStore &&
+        //     //       //     !db.objectStoreNames.contains(objectStore) &&
+        //     //       //     !["length", "item", "contains"].includes(key)
+        //     //       //   ) {
+        //     //       //     db.createObjectStore(objectStore);
+        //     //       //   }
+        //     //       // }
+        //     //     }
+        //     //   }
+        //     // );
+        //     // this.dbPromise = dbPromise;
+        //   },
+        //   () => {
+        //     console.error(
+        //       `${REACT_IDB}: an exception on deleting ${this.dataBaseName}.`
+        //     );
+        //   },
+        //   () => {
+        //     console.error(
+        //       `${REACT_IDB}: ${this.dataBaseName} delete request blocked, make sure all dataBase connections are closed.`
+        //     );
+        //   }
+        // );
       } else {
         console.error(
           `react-idb: object store ${objectStoreName} already exist.`
@@ -152,21 +173,23 @@ export default class IDB {
     onError?: (event: Event) => void,
     onBlock?: (event: Event) => void
   ) => {
-    const deleteRequest = indexedDB.deleteDatabase(this.dataBaseName);
+    // const deleteRequest = indexedDB.deleteDatabase(this.dataBaseName);
 
-    if (onSuccess)
-      deleteRequest.onsuccess = event => {
-        onSuccess(event);
-      };
+    await idb.deleteDB(this.dataBaseName);
 
-    if (onError)
-      deleteRequest.onerror = event => {
-        onError(event);
-      };
+    // if (onSuccess)
+    //   deleteRequest.onsuccess = event => {
+    //     onSuccess(event);
+    //   };
 
-    if (onBlock)
-      deleteRequest.onblocked = event => {
-        onBlock(event);
-      };
+    // if (onError)
+    //   deleteRequest.onerror = event => {
+    //     onError(event);
+    //   };
+
+    // if (onBlock)
+    //   deleteRequest.onblocked = event => {
+    //     onBlock(event);
+    //   };
   };
 }

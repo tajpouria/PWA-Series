@@ -20,7 +20,6 @@ export const App = (_prop: RouteComponentProps) => {
   (async () => {
     MyDB = new IDB("Mydb");
 
-    await MyDB.createObjectStore("1");
     // await MyDB.createObjectStore("2");
     // await MyDB.createObjectStore("3");
   })();
@@ -47,6 +46,8 @@ export const App = (_prop: RouteComponentProps) => {
         }
       });
   }, [URL]);
+
+  MyDB.createObjectStore("foo");
 
   return (
     <div className="app">
