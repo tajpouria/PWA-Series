@@ -15,25 +15,26 @@ export const App = (_prop: RouteComponentProps) => {
   const URL = JSON.parse(process.env.REACT_APP_APIS).posts;
 
   const [posts, setPosts] = React.useState<Posts>({});
+  let MyDB: any;
 
   (async () => {
-    const MyDB = new IDB("Mydb");
+    MyDB = new IDB("Mydb");
 
-    const user = await MyDB.createObjectStore("user", { keyPath: "id" });
-
-    await user?.set("userOne", { id: "userOne", name: "ali" });
+    await MyDB.createObjectStore("1");
+    // await MyDB.createObjectStore("2");
+    // await MyDB.createObjectStore("3");
   })();
 
   React.useEffect(() => {
-    fetch(URL)
-      .then(res => {
-        fetchImgLoaded.current = true;
+    // fetch(URL)
+    //   .then(res => {
+    //     fetchImgLoaded.current = true;
 
-        return res.json();
-      })
-      .then((res: Posts) => {
-        setPosts(res);
-      });
+    //     return res.json();
+    //   })
+    //   .then((res: Posts) => {
+    //     setPosts(res);
+    //   });
 
     caches
       .match(URL)
@@ -65,6 +66,15 @@ export const App = (_prop: RouteComponentProps) => {
           className="app__img"
         />
       </figure>
+      <button
+        onClick={() =>
+          MyDB.delete(() => {
+            console.log("deleted");
+          })
+        }
+      >
+        DDDDDD
+      </button>
 
       <div className="u-justify-center">
         {Object.values(posts).length ? (

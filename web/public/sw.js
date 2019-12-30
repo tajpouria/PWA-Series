@@ -8,8 +8,6 @@ self.importScripts(
 const POSTS_OBJECT_STORE = "POSTS_OBJECT_STORE";
 self.importScripts("./idb.js");
 
-console.log(POSTS_OBJECT_STORE);
-
 const APIs = {
   rickandmortyapi: "https://unpkg.com/idb@4.0.5/build/iife/index-min.js",
   posts: "https://pwa-gram-7c869.firebaseio.com/posts.json"

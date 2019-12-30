@@ -3,7 +3,7 @@ import { render } from "react-dom";
 import { Router } from "@reach/router";
 
 import "./styles.css";
-import * as serviceWorker from "./serviceWorker";
+// import * as serviceWorker from "./serviceWorker";
 
 import { App } from "./components/App";
 import { Help } from "./components/Help";
