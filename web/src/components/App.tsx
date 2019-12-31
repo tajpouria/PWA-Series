@@ -15,10 +15,16 @@ export const App = (_prop: RouteComponentProps) => {
   const URL = JSON.parse(process.env.REACT_APP_APIS).posts;
 
   const [posts, setPosts] = React.useState<Posts>({});
-  let MyDB: any;
+  let InitialDB: IDB;
 
   (async () => {
-    MyDB = new IDB("Mydb");
+    InitialDB = await IDB.init("initialDB");
+
+    const objectStores = InitialDB.objectStores;
+
+    console.log("objectStores", objectStores);
+
+    // const User = await InitialDB.createObjectStore("user");
 
     // await MyDB.createObjectStore("2");
     // await MyDB.createObjectStore("3");
@@ -47,8 +53,6 @@ export const App = (_prop: RouteComponentProps) => {
       });
   }, [URL]);
 
-  MyDB.createObjectStore("foo");
-
   return (
     <div className="app">
       <nav className="nav nav--primary">
@@ -68,11 +72,9 @@ export const App = (_prop: RouteComponentProps) => {
         />
       </figure>
       <button
-        onClick={() =>
-          MyDB.delete(() => {
-            console.log("deleted");
-          })
-        }
+        onClick={() => {
+          InitialDB.delete();
+        }}
       >
         DDDDDD
       </button>

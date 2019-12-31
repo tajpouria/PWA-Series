@@ -2,110 +2,128 @@ import * as idb from "idb";
 
 const REACT_IDB = "react-idb";
 
-export class ObjectStore {
-  private objectStore: idb.IDBPObjectStore<any, string[], string>;
-  constructor(objectStore: idb.IDBPObjectStore<any, string[], string>) {
-    this.objectStore = objectStore;
+export class IDBObject {
+  // private objectStore: idb.IDBPObjectStore<any, string[], string>;
+  // constructor(objectStore: idb.IDBPObjectStore<any, string[], string>) {
+  constructor(dbName: string, db: idb.IDBPDatabase<unknown>) {
+    // this.objectStore = objectStore;
   }
 
-  public get = async <T = any>(key: string): Promise<T> => {
-    try {
-      return (await this.objectStore).get(key);
-    } catch (err) {
-      console.error(REACT_IDB, err);
-      throw new Error(err);
-    }
-  };
+  // public get = async <T = any>(key: string): Promise<T> => {
+  //   try {
+  //     return (await this.objectStore).get(key);
+  //   } catch (err) {
+  //     console.error(REACT_IDB, err);
+  //     throw new Error(err);
+  //   }
+  // };
 
-  public set = async (key: string, val: any) => {
-    try {
-      return (await this.objectStore).put(val, key);
-    } catch (err) {
-      console.error(REACT_IDB, err);
-      throw new Error(err);
-    }
-  };
+  // public set = async (key: string, val: any) => {
+  //   try {
+  //     return (await this.objectStore).put(val, key);
+  //   } catch (err) {
+  //     console.error(REACT_IDB, err);
+  //     throw new Error(err);
+  //   }
+  // };
 
-  public delete = async (key: string) => {
-    try {
-      return (await this.objectStore).delete(key);
-    } catch (err) {
-      console.error(REACT_IDB, err);
-      throw new Error(err);
-    }
-  };
+  // public delete = async (key: string) => {
+  //   try {
+  //     return (await this.objectStore).delete(key);
+  //   } catch (err) {
+  //     console.error(REACT_IDB, err);
+  //     throw new Error(err);
+  //   }
+  // };
 
-  public clear = async () => {
-    try {
-      return (await this.objectStore).clear();
-    } catch (err) {
-      console.error(REACT_IDB, err);
-      throw new Error(err);
-    }
-  };
+  // public clear = async () => {
+  //   try {
+  //     return (await this.objectStore).clear();
+  //   } catch (err) {
+  //     console.error(REACT_IDB, err);
+  //     throw new Error(err);
+  //   }
+  // };
 
-  public keys = async () => {
-    try {
-      return (await this.objectStore).getAllKeys();
-    } catch (err) {
-      console.error(REACT_IDB, err);
-      throw new Error(err);
-    }
-  };
+  // public keys = async () => {
+  //   try {
+  //     return (await this.objectStore).getAllKeys();
+  //   } catch (err) {
+  //     console.error(REACT_IDB, err);
+  //     throw new Error(err);
+  //   }
+  // };
 }
 
 export default class IDB {
-  private dbPromise: Promise<idb.IDBPDatabase<any>>;
+  private dbVersion: number = 1;
 
-  private objectStoresOptionsStore: Record<
-    string,
-    IDBObjectStoreParameters
-  > = {};
+  protected objectStoresOptions: Record<string, IDBObjectStoreParameters> = {};
 
-  constructor(public dataBaseName: string, public dataBaseVersion: number = 1) {
+  constructor(private dbName: string, private db: idb.IDBPDatabase<unknown>) {}
+
+  public static init = async (dataBaseName: string) => {
     if (!dataBaseName) {
       console.error(`${REACT_IDB}: dataBaseName is required.`);
       throw new Error(`${REACT_IDB}: dataBaseName is required.`);
     }
-    this.dbPromise = idb.openDB(dataBaseName, dataBaseVersion, {
+
+    const idbdb = await idb.openDB(dataBaseName, 1, {
       upgrade(db) {
         db.close();
       }
     });
-  }
 
-  public getObjectStores = async () => {
+    return new IDB(dataBaseName, idbdb);
+  };
+
+  get objectStores() {
     try {
-      const db = await this.dbPromise;
-      return db.objectStoreNames;
+      const idbObjectStores = this.db.objectStoreNames;
+
+      const _objectStore: string[] = [];
+
+      for (let key in idbObjectStores) {
+        if (!["length", "item", "contains"].includes(key)) {
+          _objectStore.push(idbObjectStores[+key]);
+        }
+      }
+
+      return _objectStore;
     } catch (err) {
-      console.error(`${REACT_IDB}: dataBaseName is required.`);
+      console.error(`${REACT_IDB}: cannot get objectStores of ${this.dbName}`);
       throw new Error(err);
     }
-  };
+  }
 
   public createObjectStore = async (
     objectStoreName: string,
-    options: IDBObjectStoreParameters = {}
+    options: IDBObjectStoreParameters = { autoIncrement: true }
   ) => {
     try {
-      const currentDatabase = await this.dbPromise;
-      const objectStores = await this.getObjectStores();
+      if (!this.objectStores.includes(objectStoreName)) {
+        // await idb.openDB(this.dbName, this.dbVersion + 4, {
+        //   upgrade(db) {
+        //     console.log(db);
+        //     db.createObjectStore(objectStoreName, options);
+        //     db.close();
+        //   }
+        // });
+        return this.delete();
 
-      let OpenReq = indexedDB.open(this.dataBaseName, 2);
-      OpenReq.onupgradeneeded = function(e) {
-        // @ts-ignore
-        let db = e.target.result;
-        console.log(db);
-        setTimeout(() => {
-          db.objectStoreNames.contains("myStore") ||
-            db.createObjectStore("myStore");
-        }, 3000);
-      };
+        // let OpenReq = indexedDB.open(this.dbName, 5);
+        // OpenReq.onupgradeneeded = function(e) {
+        //   // @ts-ignore
+        //   let db = e.target.result;
+        //   console.log(db);
+        //   db.objectStoreNames.contains(objectStoreName) ||
+        //     db.createObjectStore(objectStoreName);
+        // };
 
-      // request.onerror = console.error;
+        // console.log(idbdb);
 
-      if (!currentDatabase.objectStoreNames.contains(objectStoreName)) {
+        // return new IDBObject(objectStoreName, idbdb);
+
         // var request = window.indexedDB.open(this.dataBaseName, 4);
         // request.onupgradeneeded = event => {
         //   // @ts-ignore
@@ -159,11 +177,11 @@ export default class IDB {
         // );
       } else {
         console.error(
-          `react-idb: object store ${objectStoreName} already exist.`
+          `${REACT_IDB}: object store ${objectStoreName} already exist.`
         );
       }
     } catch (err) {
-      console.error("react-idb", err);
+      console.error(REACT_IDB, err);
       throw new Error(err);
     }
   };
@@ -173,23 +191,23 @@ export default class IDB {
     onError?: (event: Event) => void,
     onBlock?: (event: Event) => void
   ) => {
-    // const deleteRequest = indexedDB.deleteDatabase(this.dataBaseName);
+    const deleteRequest = indexedDB.deleteDatabase(this.dbName);
 
-    await idb.deleteDB(this.dataBaseName);
+    // await idb.deleteDB(this.dbName);
 
-    // if (onSuccess)
-    //   deleteRequest.onsuccess = event => {
-    //     onSuccess(event);
-    //   };
+    // // if (onSuccess)
+    // //   deleteRequest.onsuccess = event => {
+    // //     onSuccess(event);
+    // //   };
 
-    // if (onError)
-    //   deleteRequest.onerror = event => {
-    //     onError(event);
-    //   };
+    // // if (onError)
+    // //   deleteRequest.onerror = event => {
+    // //     onError(event);
+    // //   };
 
-    // if (onBlock)
-    //   deleteRequest.onblocked = event => {
-    //     onBlock(event);
-    //   };
+    deleteRequest.onblocked = event => {
+      console.log("blocked");
+      // onBlock(event);
+    };
   };
 }
