@@ -18,13 +18,12 @@ let InitialDB: IDB;
   // const objectStores = InitialDB.objectStores;
 
   const User = await InitialDB.createObjectStore("User");
-  const Posts = await InitialDB.createObjectStore("Posts");
-  // const User_ = await InitialDB.createObjectStore("User");
+  const Post = await InitialDB.createObjectStore("Post");
+  const Article = await InitialDB.createObjectStore("Article");
 
+  await Article?.set("article1", { title: "react-idb" });
+  await Post?.set("post1", { name: "indexeddb" });
   await User?.set("user1", { name: "pouria" });
-  await User?.set("user2", { name: "ali" });
-
-  // await Posts?.set("post1", { name: "indexeddb" });
 
   // const keys = await User.keys();
   // const values = await User.values();
