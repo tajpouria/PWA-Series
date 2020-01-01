@@ -54,6 +54,22 @@ export class IDBObject {
     }
   };
 
+  public delete = async (key: IDBObjectKey) => {
+    const closeDBConnection = () => this.db.close();
+
+    try {
+      const db = await idb.openDB(this.db.name, this.db.version + 1, {
+        blocked() {
+          closeDBConnection();
+        }
+      });
+
+      return db.delete(this.storeName, key);
+    } catch (err) {
+      console.error(REACT_IDB, err);
+    }
+  };
+
   public keys = async () => {
     const closeDBConnection = () => this.db.close();
 
@@ -95,15 +111,6 @@ export class IDBObject {
       console.error(REACT_IDB, err);
     }
   };
-
-  // public delete = async (key: string) => {
-  //   try {
-  //     return (await this.objectStore).delete(key);
-  //   } catch (err) {
-  //     console.error(REACT_IDB, err);
-  //     throw new Error(err);
-  //   }
-  // };
 
   public clear = async () => {
     const closeDBConnection = () => this.db.close();
