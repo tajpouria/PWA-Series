@@ -10,25 +10,31 @@ import imgSmall from "../img/img-small.png";
 
 import IDB from "../utilities/idb";
 
+let InitialDB: IDB;
+
+(async () => {
+  InitialDB = await IDB.init("initialDB");
+
+  const objectStores = InitialDB.objectStores;
+
+  console.log("objectStores", objectStores);
+
+  const User = await InitialDB.createObjectStore("User");
+  // const User_ = await InitialDB.createObjectStore("User");
+  const Posts = await InitialDB.createObjectStore("Posts");
+  const Articles = await InitialDB.createObjectStore("Articles");
+
+  await User?.set("user1", { name: "pouria" });
+
+  // await MyDB.createObjectStore("2");
+  // await MyDB.createObjectStore("3");
+})();
+
 export const App = (_prop: RouteComponentProps) => {
   const fetchImgLoaded = React.useRef<boolean>(false);
   const URL = JSON.parse(process.env.REACT_APP_APIS).posts;
 
   const [posts, setPosts] = React.useState<Posts>({});
-  let InitialDB: IDB;
-
-  (async () => {
-    InitialDB = await IDB.init("initialDB");
-
-    const objectStores = InitialDB.objectStores;
-
-    console.log("objectStores", objectStores);
-
-    // const User = await InitialDB.createObjectStore("user");
-
-    // await MyDB.createObjectStore("2");
-    // await MyDB.createObjectStore("3");
-  })();
 
   React.useEffect(() => {
     // fetch(URL)
