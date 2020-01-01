@@ -17,14 +17,16 @@ let InitialDB: IDB;
 
   const objectStores = InitialDB.objectStores;
 
-  console.log("objectStores", objectStores);
-
   const User = await InitialDB.createObjectStore("User");
-  // const User_ = await InitialDB.createObjectStore("User");
   const Posts = await InitialDB.createObjectStore("Posts");
-  const Articles = await InitialDB.createObjectStore("Articles");
+  // const User_ = await InitialDB.createObjectStore("User");
 
-  await User?.set("user1", { name: "pouria" });
+  // await User?.set("user1", { name: "pouria" });
+  // await User?.set("user2", { name: "ali" });
+  // await Posts?.set("post1", { name: "indexeddb" });
+  const entries = await User.entries();
+
+  console.log(entries);
 
   // await MyDB.createObjectStore("2");
   // await MyDB.createObjectStore("3");

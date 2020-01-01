@@ -12,30 +12,40 @@ export class IDBObject {
     this.dbVersion = this.db.version;
   }
 
-  // public get = async <T = any>(key: string): Promise<T> => {
-  //   try {
-  //     return (await this.objectStore).get(key);
-  //   } catch (err) {
-  //     console.error(REACT_IDB, err);
-  //     throw new Error(err);
-  //   }
-  // };
-
   public set = async (key: string, value: any) => {
-    console.log(this.dbVersion);
-    try {
-      const open = indexedDB.open(this.db.name, this.dbVersion + 1);
+    const closeDBConnection = () => {
+      this.db.close();
 
-      open.onsuccess = () => {
-        const db = open.result;
-        const transaction = db.transaction("User", "readwrite");
-        const objectStore = transaction.objectStore("User");
-        objectStore.put(value, key);
-        this.dbVersion += 1;
-      };
+      this.set(key, value);
+    };
+    try {
+      const db = await idb.openDB(this.db.name, this.db.version + 1, {
+        blocked() {
+          closeDBConnection();
+        }
+      });
+
+      return await db.add(this.storeName, value, key);
+    } catch (err) {
+      console.error(
+        `${REACT_IDB}: unknown exception "${this.storeName}.set(${key})".`
+      );
+    }
+  };
+
+  public entries = async () => {
+    const closeDBConnection = () => this.db.close();
+
+    try {
+      const db = await idb.openDB(this.db.name, this.db.version + 1, {
+        blocked() {
+          closeDBConnection();
+        }
+      });
+
+      return db.getAll(this.storeName);
     } catch (err) {
       console.error(REACT_IDB, err);
-      // throw new Error(err);
     }
   };
 
@@ -132,11 +142,9 @@ export default class IDB {
             closeDBConnection();
           }
         });
-
-        return new IDBObject(this.db, objectStoreName);
-      } else {
-        return;
       }
+
+      return new IDBObject(this.db, objectStoreName);
     } catch (err) {
       console.error(REACT_IDB, err);
       throw new Error(err);
