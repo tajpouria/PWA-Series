@@ -2,13 +2,22 @@ import * as idb from "idb";
 
 const REACT_IDB = "react-idb";
 
+type IDBObjectKey =
+  | string
+  | number
+  | Date
+  | ArrayBufferView
+  | ArrayBuffer
+  | IDBArrayKey
+  | IDBKeyRange;
+
 export class IDBObject {
   constructor(
     private db: idb.IDBPDatabase<unknown>,
     private storeName: string
   ) {}
 
-  public set = async (key: string, value: any) => {
+  public set = async (key: IDBObjectKey, value: any) => {
     const closeDBConnection = () => {
       this.db.close();
 
@@ -26,6 +35,22 @@ export class IDBObject {
       console.error(
         `${REACT_IDB}: unknown exception "${this.storeName}.set(${key})".`
       );
+    }
+  };
+
+  public get = async (key: IDBObjectKey) => {
+    const closeDBConnection = () => this.db.close();
+
+    try {
+      const db = await idb.openDB(this.db.name, this.db.version + 1, {
+        blocked() {
+          closeDBConnection();
+        }
+      });
+
+      return db.get(this.storeName, key);
+    } catch (err) {
+      console.error(REACT_IDB, err);
     }
   };
 
@@ -110,7 +135,7 @@ export default class IDB {
       throw new Error(`${REACT_IDB}: dataBaseName is required.`);
     }
 
-    // @ts-ignore
+    // @ts-ignore //TODO: browser support
     const dataBases: any[] = await indexedDB.databases();
 
     const isAlreadyExist = dataBases.find(
