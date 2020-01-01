@@ -33,6 +33,34 @@ export class IDBObject {
     }
   };
 
+  public keys = async () => {
+    const closeDBConnection = () => this.db.close();
+
+    try {
+      const db = await idb.openDB(this.db.name, this.db.version + 1, {
+        blocked() {
+          closeDBConnection();
+        }
+      });
+
+      return db.getAllKeys(this.storeName);
+    } catch (err) {
+      console.error(REACT_IDB, err);
+    }
+  };
+
+  public values = async () => {
+    const closeDBConnection = () => this.db.close();
+
+    try {
+      const entries = await this.entries();
+
+      return entries && entries.length ? entries.map(entry => entry) : [];
+    } catch (err) {
+      console.error(REACT_IDB, err);
+    }
+  };
+
   public entries = async () => {
     const closeDBConnection = () => this.db.close();
 
@@ -61,15 +89,6 @@ export class IDBObject {
   // public clear = async () => {
   //   try {
   //     return (await this.objectStore).clear();
-  //   } catch (err) {
-  //     console.error(REACT_IDB, err);
-  //     throw new Error(err);
-  //   }
-  // };
-
-  // public keys = async () => {
-  //   try {
-  //     return (await this.objectStore).getAllKeys();
   //   } catch (err) {
   //     console.error(REACT_IDB, err);
   //     throw new Error(err);

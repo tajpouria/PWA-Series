@@ -21,12 +21,13 @@ let InitialDB: IDB;
   const Posts = await InitialDB.createObjectStore("Posts");
   // const User_ = await InitialDB.createObjectStore("User");
 
-  // await User?.set("user1", { name: "pouria" });
-  // await User?.set("user2", { name: "ali" });
+  await User?.set("user1", { name: "pouria" });
+  await User?.set("user2", { name: "ali" });
   // await Posts?.set("post1", { name: "indexeddb" });
-  const entries = await User.entries();
 
-  console.log(entries);
+  // const keys = await User.keys();
+  // const values = await User.values();
+  // const entries = await User.entries();
 
   // await MyDB.createObjectStore("2");
   // await MyDB.createObjectStore("3");
