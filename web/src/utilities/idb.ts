@@ -30,10 +30,11 @@ export class IDBObject {
         }
       });
 
-      return await db.add(this.storeName, value, key);
+      return db.add(this.storeName, value, key);
     } catch (err) {
       console.error(
-        `${REACT_IDB}: unknown exception "${this.storeName}.set(${key})".`
+        `${REACT_IDB}: unknown exception "${this.storeName}.set(${key})".`,
+        err
       );
     }
   };
@@ -130,8 +131,6 @@ export class IDBObject {
 }
 
 export default class IDB {
-  private dbVersion: number = 1;
-
   protected objectStoresOptions: Record<string, IDBObjectStoreParameters> = {};
 
   constructor(private dbName: string, private db: idb.IDBPDatabase<unknown>) {}
@@ -171,7 +170,6 @@ export default class IDB {
       return _objectStore;
     } catch (err) {
       console.error(`${REACT_IDB}: cannot get objectStores of ${this.dbName}`);
-      throw new Error(err);
     }
   }
 
@@ -180,14 +178,12 @@ export default class IDB {
     options: IDBObjectStoreParameters = { autoIncrement: true }
   ) => {
     const closeDBConnection = () => this.db.close();
-    const bumpUpDbVersion = () => (this.dbVersion += 1);
 
     try {
       if (!this.db.objectStoreNames.contains(objectStoreName)) {
-        await idb.openDB(this.dbName, this.dbVersion + 1, {
+        await idb.openDB(this.dbName, this.db.version + 1, {
           upgrade(db) {
             db.createObjectStore(objectStoreName, options);
-            bumpUpDbVersion();
           },
 
           blocked() {
@@ -199,7 +195,6 @@ export default class IDB {
       return new IDBObject(this.db, objectStoreName);
     } catch (err) {
       console.error(REACT_IDB, err);
-      throw new Error(err);
     }
   };
 

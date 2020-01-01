@@ -35,7 +35,7 @@ let InitialDB: IDB;
   // await MyDB.createObjectStore("2");
   // await MyDB.createObjectStore("3");
   // const get = await User.get("user2");
-  await User.delete("user1");
+  // await User.delete("user1");
 })();
 
 export const App = (_prop: RouteComponentProps) => {
