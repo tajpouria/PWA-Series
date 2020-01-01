@@ -3,14 +3,10 @@ import * as idb from "idb";
 const REACT_IDB = "react-idb";
 
 export class IDBObject {
-  private dbVersion: number = 2;
-
   constructor(
     private db: idb.IDBPDatabase<unknown>,
     private storeName: string
-  ) {
-    this.dbVersion = this.db.version;
-  }
+  ) {}
 
   public set = async (key: string, value: any) => {
     const closeDBConnection = () => {
@@ -50,8 +46,6 @@ export class IDBObject {
   };
 
   public values = async () => {
-    const closeDBConnection = () => this.db.close();
-
     try {
       const entries = await this.entries();
 
@@ -86,14 +80,21 @@ export class IDBObject {
   //   }
   // };
 
-  // public clear = async () => {
-  //   try {
-  //     return (await this.objectStore).clear();
-  //   } catch (err) {
-  //     console.error(REACT_IDB, err);
-  //     throw new Error(err);
-  //   }
-  // };
+  public clear = async () => {
+    const closeDBConnection = () => this.db.close();
+
+    try {
+      const db = await idb.openDB(this.db.name, this.db.version + 1, {
+        blocked() {
+          closeDBConnection();
+        }
+      });
+
+      return db.clear(this.storeName);
+    } catch (err) {
+      console.error(REACT_IDB, err);
+    }
+  };
 }
 
 export default class IDB {

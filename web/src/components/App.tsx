@@ -15,7 +15,7 @@ let InitialDB: IDB;
 (async () => {
   InitialDB = await IDB.init("initialDB");
 
-  const objectStores = InitialDB.objectStores;
+  // const objectStores = InitialDB.objectStores;
 
   const User = await InitialDB.createObjectStore("User");
   const Posts = await InitialDB.createObjectStore("Posts");
@@ -23,11 +23,14 @@ let InitialDB: IDB;
 
   await User?.set("user1", { name: "pouria" });
   await User?.set("user2", { name: "ali" });
+
   // await Posts?.set("post1", { name: "indexeddb" });
 
   // const keys = await User.keys();
   // const values = await User.values();
   // const entries = await User.entries();
+
+  // await User.clear();
 
   // await MyDB.createObjectStore("2");
   // await MyDB.createObjectStore("3");
