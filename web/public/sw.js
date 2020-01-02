@@ -1,3 +1,6 @@
+// idborm: do not edit following line manually
+importScripts('./idborm-utility.js');
+
 const DYNAMIC_CACHE = "dynamic-cache-v2";
 const STATIC_CACHE = "static-cache-v2";
 

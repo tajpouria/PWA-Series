@@ -30,7 +30,7 @@ export class IDBObject {
         }
       });
 
-      return db.add(this.storeName, value, key);
+      return db.put(this.storeName, value, key);
     } catch (err) {
       console.error(
         `${REACT_IDB}: unknown exception "${this.storeName}.set(${key})".`,
