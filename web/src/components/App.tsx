@@ -8,35 +8,6 @@ import imgMedium from "../img/img-medium.png";
 import imgLarge from "../img/img-large.png";
 import imgSmall from "../img/img-small.png";
 
-import IDB from "../utilities/idb";
-
-let InitialDB: IDB;
-
-(async () => {
-  InitialDB = await IDB.init("initialDB");
-
-  // const objectStores = InitialDB.objectStores;
-
-  const User = await InitialDB.createObjectStore("User");
-  const Post = await InitialDB.createObjectStore("Post");
-  const Article = await InitialDB.createObjectStore("Article");
-
-  await Article?.put("article1", { title: "react-idb" });
-  await Post?.put("post1", { name: "indexeddb" });
-  await User?.put("user1", { name: "pouria" });
-
-  // const keys = await User.keys();
-  // const values = await User.values();
-  // const entries = await User.entries();
-
-  // await User.clear();
-
-  // await MyDB.createObjectStore("2");
-  // await MyDB.createObjectStore("3");
-  // const get = await User.get("user2");
-  // await User.delete("user1");
-})();
-
 export const App = (_prop: RouteComponentProps) => {
   const fetchImgLoaded = React.useRef<boolean>(false);
   const URL = JSON.parse(process.env.REACT_APP_APIS).posts;
@@ -84,13 +55,6 @@ export const App = (_prop: RouteComponentProps) => {
           className="app__img"
         />
       </figure>
-      <button
-        onClick={() => {
-          InitialDB.delete();
-        }}
-      >
-        DDDDDD
-      </button>
 
       <div className="u-justify-center">
         {Object.values(posts).length ? (

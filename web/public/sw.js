@@ -1,5 +1,10 @@
-// idborm: do not edit following line manually
-importScripts('./idborm-utility.js');
+/** "idborm": Following code snippet is required to access the "IDB"*/
+importScripts("./idborm.iife.js");
+const { IDB } = idborm;
+
+const DB = IDB.init("HELLO", 1, { name: "JS", options: { ketPath: "good" } });
+
+const { JS } = DB.objectStores;
 
 const DYNAMIC_CACHE = "dynamic-cache-v2";
 const STATIC_CACHE = "static-cache-v2";
@@ -44,7 +49,7 @@ self.addEventListener("install", ev => {
   );
 });
 
-self.addEventListener("activate", ev => {
+self.addEventListener("activate", async ev => {
   ev.waitUntil(
     caches.keys().then(keyList => {
       return Promise.all(
@@ -57,7 +62,10 @@ self.addEventListener("activate", ev => {
   );
 });
 
-self.addEventListener("fetch", ev => {
+self.addEventListener("fetch", async ev => {
+  await JS.put({ good: "good" });
+  console.put(JS);
+
   if (ev.request.url.includes(APIs.posts)) {
     ev.respondWith(
       fetch(ev.request).then(async response => {
