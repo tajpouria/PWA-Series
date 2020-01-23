@@ -1,8 +1,6 @@
-export interface Post {
+export interface IPost {
   id: string;
   title: string;
   image: string;
   location: string;
 }
-
-export type Posts = Record<string, Post>;

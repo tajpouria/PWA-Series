@@ -1,8 +1,8 @@
 import * as React from "react";
-import { Post } from "../typing/dynamicData";
+import { IPost } from "../typing/dynamicData";
 
 interface Props {
-  children: Post;
+  children: IPost;
 }
 
 export const Card: React.FC<Props> = ({

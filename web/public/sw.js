@@ -2,24 +2,13 @@
 importScripts("./idborm.iife.js");
 const { IDB } = idborm;
 
-const DB = IDB.init("HELLO", 1, { name: "JS", options: { ketPath: "good" } });
-
-const { JS } = DB.objectStores;
-
-const DYNAMIC_CACHE = "dynamic-cache-v2";
-const STATIC_CACHE = "static-cache-v2";
-
-self.importScripts(
-  "https://cdn.jsdelivr.net/npm/idb@4.0.5/build/iife/with-async-ittr-min.js"
-);
-
-const POSTS_OBJECT_STORE = "POSTS_OBJECT_STORE";
-self.importScripts("./idb.js");
-
 const APIs = {
   rickandmortyapi: "https://unpkg.com/idb@4.0.5/build/iife/index-min.js",
   posts: "https://pwa-gram-7c869.firebaseio.com/posts.json"
 };
+
+const STATIC_CACHE = "STATIC_CACHE";
+const DYNAMIC_CACHE = "DYNAMIC_CACHE";
 
 const STATIC_DATA = [
   "/",
@@ -28,9 +17,15 @@ const STATIC_DATA = [
   "/static/js/1.chunk.js",
   "/static/js/bundle.js",
   "/static/js/main.chunk.js",
-  "https://fonts.googleapis.com/css?family=Ma+Shan+Zheng&display=swap",
-  "https://cdn.jsdelivr.net/npm/idb@4.0.5/build/iife/with-async-ittr-min.js"
+  "https://fonts.googleapis.com/css?family=Ma+Shan+Zheng&display=swap"
 ];
+
+const PostDB = IDB.init("PostDB", 1, {
+  name: "Post",
+  options: { keyPath: "id" }
+});
+
+const { Post } = PostDB.objectStores;
 
 const trimCache = async (cacheName, maxItem) => {
   const cache = await caches.open(cacheName);
@@ -63,26 +58,19 @@ self.addEventListener("activate", async ev => {
 });
 
 self.addEventListener("fetch", async ev => {
-  await JS.put({ good: "good" });
-  console.put(JS);
-
   if (ev.request.url.includes(APIs.posts)) {
     ev.respondWith(
-      fetch(ev.request).then(async response => {
-        const clonedResponse = response.clone();
-        clonedResponse.json().then(async data => {
-          const db = await dbPromise;
-          const tx = db.transaction(POSTS_OBJECT_STORE, "readwrite");
-          const store = tx.objectStore(POSTS_OBJECT_STORE);
+      fetch(ev.request)
+        .then(async response => {
+          const clonedResponse = response.clone();
 
-          for (let key in data) {
-            store.put(data[key]);
-          }
+          const data = await clonedResponse.json();
 
-          return tx.complete;
-        });
-        return response;
-      })
+          await Promise.all[Object.values(data).map(post => Post.put(post))];
+
+          return response;
+        })
+        .catch(err => err)
     );
   } else if (STATIC_DATA.find(req => req === ev.request.url)) {
     ev.respondWith(
@@ -99,12 +87,14 @@ self.addEventListener("fetch", async ev => {
           .then(res =>
             caches.open(DYNAMIC_CACHE).then(cache => {
               trimCache(DYNAMIC_CACHE, 10);
+
               cache.put(ev.request.url, res.clone());
+
               return res;
             })
           )
           .catch(() => {
-            if (request.headers.get("accept").includes("text/html")) {
+            if (ev.request.headers.get("accept").includes("text/html")) {
               return caches
                 .open(STATIC_CACHE)
                 .then(cache => cache.match("/fallback.html"));

@@ -1,39 +1,36 @@
 import * as React from "react";
+import { IDB } from "idborm";
 import { Link, RouteComponentProps } from "@reach/router";
 
-import { Posts, Post } from "../typing/dynamicData";
+import { IPost } from "../typing/dynamicData";
 import { Card } from "./Card";
 
 import imgMedium from "../img/img-medium.png";
 import imgLarge from "../img/img-large.png";
 import imgSmall from "../img/img-small.png";
 
+const PostDB = IDB.init("PostDB", 1, {
+  name: "Post",
+  options: { keyPath: "id" }
+});
+
+const { Post } = PostDB.objectStores;
+
 export const App = (_prop: RouteComponentProps) => {
-  const fetchImgLoaded = React.useRef<boolean>(false);
   const URL = JSON.parse(process.env.REACT_APP_APIS).posts;
 
-  const [posts, setPosts] = React.useState<Posts>({});
+  const [posts, setPosts] = React.useState<IPost[]>([]);
 
   React.useEffect(() => {
-    // fetch(URL)
-    //   .then(res => {
-    //     fetchImgLoaded.current = true;
+    fetch(URL)
+      .then(async res => {
+        const posts = await res.json();
 
-    //     return res.json();
-    //   })
-    //   .then((res: Posts) => {
-    //     setPosts(res);
-    //   });
-
-    caches
-      .match(URL)
-      .then(res => {
-        if (res && !fetchImgLoaded.current) return res.json();
+        setPosts(Object.values(posts));
       })
-      .then((res: Posts) => {
-        if (res) {
-          setPosts(res);
-        }
+      .catch(async err => {
+        const posts = await Post.values();
+        setPosts(posts);
       });
   }, [URL]);
 
@@ -57,10 +54,8 @@ export const App = (_prop: RouteComponentProps) => {
       </figure>
 
       <div className="u-justify-center">
-        {Object.values(posts).length ? (
-          Object.values(posts).map((post: Post) => (
-            <Card key={post.id}>{post}</Card>
-          ))
+        {posts.length ? (
+          posts.map((post: IPost) => <Card key={post.id}>{post}</Card>)
         ) : (
           <small className="small small--primary">
             There is too quite here!
