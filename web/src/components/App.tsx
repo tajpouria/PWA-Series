@@ -4,22 +4,34 @@ import { Link, RouteComponentProps } from "@reach/router";
 
 import { IPost } from "../typing/dynamicData";
 import { Card } from "./Card";
+import { Button } from "./Elements";
+import { ModalContainer } from "./Modal";
+import { Feed } from "./Feed";
+import { APIs } from "../utils/apis";
 
 import imgMedium from "../img/img-medium.png";
 import imgLarge from "../img/img-large.png";
 import imgSmall from "../img/img-small.png";
 
-const PostDB = IDB.init("PostDB", 1, {
-  name: "Post",
-  options: { keyPath: "id" }
-});
+const PostDB = IDB.init("PostDB", 2, [
+  {
+    name: "Post",
+    options: { keyPath: "id" }
+  },
+  {
+    name: "SyncPost",
+    options: { keyPath: "id" }
+  }
+]);
 
-const { Post } = PostDB.objectStores;
+const { Post, SyncPost } = PostDB.objectStores;
+
+const URL = APIs.posts;
 
 export const App = (_prop: RouteComponentProps) => {
-  const URL = JSON.parse(process.env.REACT_APP_APIS).posts;
-
   const [posts, setPosts] = React.useState<IPost[]>([]);
+
+  const [ShouldShowAddPost, setShouldShowAddPost] = React.useState(false);
 
   React.useEffect(() => {
     fetch(URL)
@@ -53,7 +65,7 @@ export const App = (_prop: RouteComponentProps) => {
         />
       </figure>
 
-      <div className="u-justify-center">
+      <div className="app__post-container">
         {posts.length ? (
           posts.map((post: IPost) => <Card key={post.id}>{post}</Card>)
         ) : (
@@ -62,6 +74,22 @@ export const App = (_prop: RouteComponentProps) => {
           </small>
         )}
       </div>
+      <Button
+        primary
+        round
+        className="app__new-post-btn"
+        onClick={toggleAddPost}
+      >
+        +
+      </Button>
+      <ModalContainer show={ShouldShowAddPost}>
+        <Feed syncPost={SyncPost} toggleShow={toggleAddPost} />
+        <Button onClick={toggleAddPost}>back</Button>
+      </ModalContainer>
     </div>
   );
+
+  function toggleAddPost() {
+    setShouldShowAddPost(st => !st);
+  }
 };

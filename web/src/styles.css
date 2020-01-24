@@ -19,6 +19,9 @@ html {
 body {
   font-size: 62.5%;
   font-family: "Ma Shan Zheng", cursive, sans-serif;
+  display: flex;
+  justify-content: center;
+  background-color: #eee;
 }
 
 /* VARIABLES */
@@ -39,6 +42,7 @@ body {
 
 .app {
   height: 100vh;
+  max-width: var(--max-width--default);
 }
 
 .app__img-container {
@@ -56,7 +60,25 @@ body {
   display: block;
   height: 100%;
   width: 100%;
-  max-width: var(--max-width--default);
+}
+
+.app__new-post-btn {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+}
+
+.feed__form {
+  height: 50vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.app__post-container {
+  display: grid;
+  grid-template: auto / repeat(3, 1fr);
 }
 
 /* COMPONENTS */
@@ -80,23 +102,35 @@ body {
   border-radius: var(--border-radius-default);
   max-width: var(--max-width--default);
   position: relative;
+  height: 10rem;
 }
 
 .card__img {
   width: 100%;
   height: 100%;
   border-radius: var(--border-radius-default);
+  transition: opacity 0.2s ease;
 }
 
 .card__cap {
   font-size: var(--font-default);
+  background-color: var(--color-primary);
   color: var(--color-white);
-  opacity: 0.6;
+  opacity: 0;
   position: absolute;
   bottom: 1rem;
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
+  transition: opacity 0.2s ease;
+}
+
+.card:hover .card__img {
+  filter: blur(1px) grayscale(1);
+}
+
+.card:hover .card__cap {
+  opacity: 1;
 }
 
 .small {
@@ -106,6 +140,10 @@ body {
 
 .small--primary {
   color: var(--color-primary);
+}
+
+.input__label {
+  font-size: 2rem;
 }
 
 /* UTILITIES */

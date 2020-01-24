@@ -4,7 +4,8 @@ const { IDB } = idborm;
 
 const APIs = {
   rickandmortyapi: "https://unpkg.com/idb@4.0.5/build/iife/index-min.js",
-  posts: "https://pwa-gram-7c869.firebaseio.com/posts.json"
+  posts: "https://pwa-gram-7c869.firebaseio.com/posts.json",
+  newPost: "https://us-central1-pwa-gram-7c869.cloudfunctions.net/newPost"
 };
 
 const STATIC_CACHE = "STATIC_CACHE";
@@ -20,12 +21,18 @@ const STATIC_DATA = [
   "https://fonts.googleapis.com/css?family=Ma+Shan+Zheng&display=swap"
 ];
 
-const PostDB = IDB.init("PostDB", 1, {
-  name: "Post",
-  options: { keyPath: "id" }
-});
+const PostDB = IDB.init("PostDB", 2, [
+  {
+    name: "Post",
+    options: { keyPath: "id" }
+  },
+  {
+    name: "SyncPost",
+    options: { keyPath: "id" }
+  }
+]);
 
-const { Post } = PostDB.objectStores;
+const { Post, SyncPost } = PostDB.objectStores;
 
 const trimCache = async (cacheName, maxItem) => {
   const cache = await caches.open(cacheName);
@@ -100,6 +107,30 @@ self.addEventListener("fetch", async ev => {
                 .then(cache => cache.match("/fallback.html"));
             }
           });
+      })
+    );
+  }
+});
+
+self.addEventListener("sync", event => {
+  if (event.tag === "sync-new-post") {
+    event.waitUntil(
+      SyncPost.values().then(values => {
+        values.forEach(value => {
+          fetch(APIs.newPost, {
+            method: "POST",
+            body: JSON.stringify(value),
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json"
+            }
+          }).then(async res => {
+            if (res.ok) {
+              const data = await res.json();
+              SyncPost.delete(data.id);
+            }
+          });
+        });
       })
     );
   }

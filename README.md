@@ -630,3 +630,48 @@ const clearSingleRecord = (st, id) =>
     })
     .then(() => console.info("items deleted"));
 ```
+
+## Background sync
+
+./app.js
+
+```ts
+document
+  .querySelector(".form")
+  .addEventListener("submit", async submitEvent => {
+    if ("serviceWorker" in navigator && "SyncManager" in window) {
+      const sw = await navigator.serviceWorker.ready;
+
+      // store syncData in indexedDB
+      await SyncPost.put(newPost);
+
+      await sw.sync.register("sync-new-post");
+    } else {
+      postFormData(value);
+    }
+  });
+```
+
+./public/serviceWorker.js
+
+```ts
+self.addEventListener("sync", event => {
+  if (event.tag === "sync-new-post") {
+    // listening to a specific tag
+    event.waitUntil(
+      SyncPost.values().then(values => {
+        values.forEach(value => {
+          // loop over stored request inside the indexedDB
+          sendFormData(value).then(async res => {
+            if (res.ok) {
+              // delete request from objectStore when it resolved
+              const data = await res.json();
+              await SyncPost.delete(data.id);
+            }
+          });
+        });
+      })
+    );
+  }
+});
+```
