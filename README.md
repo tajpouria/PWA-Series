@@ -675,3 +675,19 @@ self.addEventListener("sync", event => {
   }
 });
 ```
+
+## Push notification
+
+### requestPermission
+
+```ts
+if ("Notification" in window) {
+  Notification.askPermission(result => {
+    if (result !== "granted") {
+      // Permission denied
+    } else {
+      // Permission granted
+    }
+  });
+}
+```
