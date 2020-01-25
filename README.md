@@ -680,14 +680,201 @@ self.addEventListener("sync", event => {
 
 ### requestPermission
 
+./src/App.tsx
+
 ```ts
 if ("Notification" in window) {
   Notification.askPermission(result => {
     if (result !== "granted") {
       // Permission denied
     } else {
-      // Permission granted
+      // CONFIGURE PUSH SUBSCRIPTION should handled here
+
+      new Notification(notification_title, {
+        // https://developer.mozilla.org/en-US/docs/Web/API/notification/Notification
+        body: notification_body
+      });
+
+      // or send show notification from the serviceWorker
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.ready.then(serviceWorkerRegistration => {
+          serviceWorkerRegistration.showNotification(notification_title, {
+            // notifications options
+          });
+        });
+      }
     }
   });
+
+  var notification_options = {
+    body,
+    icon: PATH_TO_ICON,
+    image: PATH_TO_IMAGE,
+    dir: auto | ltr | ltr,
+    lang: "en-US", //  BCP: 47
+    vibrate: [100, 50, 200], // [vibrate ms, pause ms, vibrate ms ] vibrate-pause-vibrate-pause-...
+    badge: PATH_TO_BADGE, // Android top bar badge 96x96 is recommended
+
+    tag: "NOTIFICATION_TAG", // kinda id for notification i.e. if two notification have same tag only the last one will shown
+    renotify: true, // if set to true even if second notification have same tag to previous one it will cause vibrate the phone
+
+    actions: [
+      { action: "confirm", title, icon: PATH_TO_ICON },
+      { action: "cancel", title, icon: PATH_TO_ICON }
+    ]
+  };
 }
+```
+
+### Listening to notification in serviceWorker
+
+./public/sw.js
+
+```js
+self.addEventListener("notificationclick", event => {
+  const notification = event.notification;
+  const action = event.action;
+
+  if (action === "confirm") {
+    console.log("Confirmation was chosen");
+    notification.close();
+  } else {
+    event.waitUntil(
+      clients.matchAll().then(clis => {
+        const client = clis.find(c => c.visibilityState === "visible");
+
+        if (client) {
+          client.navigate(URL);
+        } else {
+          clients.openWindow(URL);
+        }
+        notification.close();
+      })
+    );
+  }
+});
+
+self.addEventListener("notificationclose", event => {
+  console.log("Notification close event", event);
+});
+```
+
+### Configure push subscription and Storing subscription
+
+> yarn add web-push
+
+#### generate vapid key
+
+> ./node_modules/.bin/web-push generate-vapid-keys
+
+```sh
+=======================================
+
+Public Key:
+BGloLj23J2ILplF07sVJwMb9XiHsl8gVGjPxrdMN4H9YiqHLoPYJUjYcXtlxrNcQhxJ4tNQOzzymeJxf2t5F1Vo
+
+Private Key:
+cehQ4_2VuA4WOOkB45IpxwpymRmgpAAZo7r4zvSLTZ0
+
+=======================================
+```
+
+./src/App.tsx
+
+```tsx
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+const configurePushSubscription = async () => {
+  if ("serviceWorker" in navigator) {
+    const swReg = await navigator.serviceWorker.ready;
+
+    const sub = await swReg.pushManager.getSubscription();
+
+    if (sub === null) {
+
+      const convertedVapidKey = urlBase64ToUint8Array(Public Key)
+
+      const newSub = swReg.pushManager.subscribe({
+        visibleOnly: true,
+        applicationServerKey: convertedVapidKey
+      });
+
+        // POST REQUEST to store newSub to database
+    } else {
+      // We have subscription
+    }
+  }
+};
+```
+
+### Send notification from server
+
+./functions/index.js
+
+```js
+const webPush = require("web-push");
+
+exports.newPost = functions.https.onRequest(async (req, res) => {
+  webPush.setVapidDetails("mailto:email@email.com", PublicKey, PrivateKey);
+
+  const subs = await admin()
+    .database()
+    .ref("/subscriptions")
+    .once("value");
+
+  // subs is an Object but since we're using firebase SDK we access forEach
+
+  subs.forEach(sub => {
+    const pushConfig = {
+      endPoint: sub.val().endpoint,
+      keys: {
+        auth: sub.val().auth,
+        p256dh: sub.val().p256dh
+      }
+    };
+
+    webPush.sendNotification(
+      pushConfig,
+      JSON.stringify({
+        title: "New Post",
+        content: "New Post Added!",
+        openUrl: "/posts" 
+      })
+    );
+  });
+});
+```
+
+### Listening to push massages
+
+./public/sw.js
+
+```js
+self.addEventListener("push", async event => {
+  let data = { title: "New!", content: "Some thing new happened!" };
+
+  if (event.data) {
+    data = JSON.stringify(event.data.text());
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.content
+    })
+  );
+});
 ```

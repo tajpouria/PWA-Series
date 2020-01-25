@@ -65,6 +65,8 @@ export const App = (_prop: RouteComponentProps) => {
         />
       </figure>
 
+      <Button onClick={handleEnableNotification}>Enable Notification</Button>
+
       <div className="app__post-container">
         {posts.length ? (
           posts.map((post: IPost) => <Card key={post.id}>{post}</Card>)
@@ -88,6 +90,34 @@ export const App = (_prop: RouteComponentProps) => {
       </ModalContainer>
     </div>
   );
+
+  async function handleEnableNotification() {
+    if ("Notification" in window) {
+      const permission = await Notification.requestPermission();
+
+      if (permission === "granted" && "serviceWorker" in navigator) {
+        const swReg = await navigator.serviceWorker.ready;
+
+        const tag = "PERMISSION_GRANTED";
+
+        swReg.showNotification("Permission granted...", {
+          body: "Permission granted notification's body",
+          icon: "../img/img-small.png",
+          image: "../img/img-large.png",
+          dir: "ltr",
+          lang: "en-US",
+          vibrate: [100, 50, 200],
+          badge: "../img/img-small.png",
+          tag,
+          renotify: true,
+          actions: [
+            { action: "confirm", title: "Okay", icon: "../img/img-small.png" },
+            { action: "cancel", title: "Cancel", icon: "../img/img-small.png" }
+          ]
+        });
+      }
+    }
+  }
 
   function toggleAddPost() {
     setShouldShowAddPost(st => !st);
