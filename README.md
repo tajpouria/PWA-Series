@@ -721,7 +721,12 @@ if ("Notification" in window) {
     actions: [
       { action: "confirm", title, icon: PATH_TO_ICON },
       { action: "cancel", title, icon: PATH_TO_ICON }
-    ]
+    ],
+
+    data: {
+      // meta Date
+      [string]: any
+    }
   };
 }
 ```
@@ -744,9 +749,10 @@ self.addEventListener("notificationclick", event => {
         const client = clis.find(c => c.visibilityState === "visible");
 
         if (client) {
-          client.navigate(URL);
+          client.navigate(notification.data);
+          client.focus();
         } else {
-          clients.openWindow(URL);
+          clients.openWindow(notification.data);
         }
         notification.close();
       })
@@ -808,8 +814,8 @@ const configurePushSubscription = async () => {
 
       const convertedVapidKey = urlBase64ToUint8Array(Public Key)
 
-      const newSub = swReg.pushManager.subscribe({
-        visibleOnly: true,
+      const newSub = await swReg.pushManager.subscribe({
+        userVisibleOnly: true,
         applicationServerKey: convertedVapidKey
       });
 
@@ -852,7 +858,7 @@ exports.newPost = functions.https.onRequest(async (req, res) => {
       JSON.stringify({
         title: "New Post",
         content: "New Post Added!",
-        openUrl: "/posts" 
+        url: "/posts"
       })
     );
   });
@@ -865,7 +871,7 @@ exports.newPost = functions.https.onRequest(async (req, res) => {
 
 ```js
 self.addEventListener("push", async event => {
-  let data = { title: "New!", content: "Some thing new happened!" };
+  let data = { title: "New!", content: "Some thing new happened!", url: "/" };
 
   if (event.data) {
     data = JSON.stringify(event.data.text());
@@ -873,7 +879,10 @@ self.addEventListener("push", async event => {
 
   event.waitUntil(
     self.registration.showNotification(data.title, {
-      body: data.content
+      body: data.content,
+      data: {
+        url: data.url
+      }
     })
   );
 });
