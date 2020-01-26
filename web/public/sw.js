@@ -135,3 +135,41 @@ self.addEventListener("sync", event => {
     );
   }
 });
+
+self.addEventListener("push", async event => {
+  let data = {
+    title: "New!",
+    body: "Some thing new happened!",
+    data: {
+      url: "/"
+    },
+    image: "./icons/app-icon-96x96"
+  };
+
+  if (event.data) {
+    data = JSON.parse(event.data.text());
+  }
+
+  event.waitUntil(self.registration.showNotification(data.title, data));
+});
+
+self.addEventListener("notificationclick", event => {
+  const notification = event.notification;
+
+  if (notification) {
+    event.waitUntil(
+      clients.matchAll().then(clis => {
+        const client = clis.find(c => c.visibilityState === "visible");
+
+        if (client) {
+          client.navigate(notification.data.url);
+          client.focus();
+        } else {
+          clients.openWindow(notification.data.url);
+        }
+      })
+    );
+
+    notification.close();
+  }
+});

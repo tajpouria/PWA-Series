@@ -42,9 +42,11 @@ exports.newPost = functions.https.onRequest((request, response) => {
           pushConfig,
           JSON.stringify({
             title: "New Post!",
-            content: `${title} on ${location}`,
+            body: `${title} on ${location}`,
             image,
-            url: "/help"
+            data: {
+              url: "/help"
+            }
           })
         );
       });

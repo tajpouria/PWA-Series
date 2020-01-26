@@ -19,9 +19,12 @@ const PUBIC_KEY = process.env.REACT_APP_PUBLIC_KEY as string;
 export async function configureSubscription() {
   if ("Notification" in window) {
     const permission = await Notification.requestPermission();
+
     if (permission === "granted" && "serviceWorker" in navigator) {
       const swReg = await navigator.serviceWorker.ready;
+
       const subs = await swReg.pushManager.getSubscription();
+
       if (subs === null) {
         const newSub = await swReg.pushManager.subscribe({
           userVisibleOnly: true,

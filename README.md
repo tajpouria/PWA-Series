@@ -749,10 +749,10 @@ self.addEventListener("notificationclick", event => {
         const client = clis.find(c => c.visibilityState === "visible");
 
         if (client) {
-          client.navigate(notification.data);
+          client.navigate(notification.data.url);
           client.focus();
         } else {
-          clients.openWindow(notification.data);
+          clients.openWindow(notification.data.url);
         }
         notification.close();
       })
@@ -874,7 +874,7 @@ self.addEventListener("push", async event => {
   let data = { title: "New!", content: "Some thing new happened!", url: "/" };
 
   if (event.data) {
-    data = JSON.stringify(event.data.text());
+    data = JSON.parse(event.data.text());
   }
 
   event.waitUntil(
