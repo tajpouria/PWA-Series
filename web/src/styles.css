@@ -69,11 +69,31 @@ body {
 }
 
 .feed__form {
-  height: 50vh;
   display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.feed__capture-button {
+  height: 5rem;
+  width: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.feed__capture-icon {
+  height: 3rem;
+}
+
+.feed__camera-container {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+
+.feed__camera-video {
+  display: block;
+  height: 8rem;
 }
 
 .app__post-container {

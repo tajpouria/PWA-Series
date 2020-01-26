@@ -887,3 +887,96 @@ self.addEventListener("push", async event => {
   );
 });
 ```
+
+## Native device features
+
+### Accessing device camera
+
+./Feed.tsx
+
+```tsx
+const Feed = () => {
+  const videoRef = React.useRef() as React.RefObject<HTMLVideoElement>;
+
+  React.useEffect(() => {
+    if ("getUserMedia" in navigator.mediaDevices) {
+      navigator.mediaDevices
+        .getUserMedia({ video: true })
+        .then(stream => {
+          videoRef.current!.srcObject = stream;
+        })
+        .catch(() => {
+          // NOT PERMITTED
+        });
+    }
+  }, []);
+
+  return <video ref={videoRef} autoPlay></video>;
+};
+```
+
+### handling capture
+
+./Feed.tsxjk
+
+```tsx
+const Feed = () => {
+  function handleCapture() {
+    const canvas = canvasRef.current;
+    const video = videoRef.current;
+
+    if (canvas && video) {
+      const context = canvas.getContext("2d");
+
+      context?.drawImage(
+        video,
+        0,
+        0,
+        canvas.width,
+        video.videoHeight / (video.videoWidth / canvas.width)
+      );
+
+      // @ts-ignore
+      video.srcObject.getVideoTracks().forEach(track => track.stop());
+    }
+  }
+
+  return (
+    <>
+      <canvas ref={canvasRef} style={{ display: takePic ? "block" : "none" }} />
+
+      <video ref={videoRef} autoPlay />
+
+      <button onClick={handleCapture}>Capture</button>
+    </>
+  );
+};
+```
+
+### Sundry
+
+#### FormData https://javascript.info/formdata
+
+If HTML form element is provided, it automatically captures its fields.
+
+The special thing about FormData is that network methods, such as fetch, can accept a FormData object as a body. It’s encoded and sent out with `Content-Type: form/multipart`.
+
+```js
+const formDate = new FormData();
+
+formData.append(fieldName, fieldVal), formData.add("file", fileVal, fileName); // as it were a name of the file in user’s filesystem,
+
+formDate.remove(fieldName);
+
+formData.get(name);
+
+formData.has(name);
+
+// The difference is that .set removes all fields with the given name
+formData.set(name, value), formData.set(name, blob, fileName);
+
+fetch("/article/formdata/post/user-avatar", {
+  method: "POST",
+  body: fromData
+});
+```

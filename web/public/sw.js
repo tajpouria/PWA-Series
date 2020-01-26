@@ -117,19 +117,20 @@ self.addEventListener("sync", event => {
     event.waitUntil(
       SyncPost.values().then(values => {
         values.forEach(value => {
-          fetch(APIs.newPost, {
-            method: "POST",
-            body: JSON.stringify(value),
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json"
+          const formData = new FormData();
+          formData.append("id", value.id);
+          formData.append("title", value.title);
+          formData.append("location", value.location);
+          formData.append("file", value.image, `${value.title}.png`);
+
+          fetch(APIs.newPost, { method: "POST", body: formData }).then(
+            async res => {
+              if (res.ok) {
+                const data = await res.json();
+                SyncPost.delete(data.id);
+              }
             }
-          }).then(async res => {
-            if (res.ok) {
-              const data = await res.json();
-              SyncPost.delete(data.id);
-            }
-          });
+          );
         });
       })
     );
@@ -143,11 +144,12 @@ self.addEventListener("push", async event => {
     data: {
       url: "/"
     },
-    image: "./icons/app-icon-96x96"
+    image: "./icons/app-icon-96x96",
+    vibrate: [100, 50, 200]
   };
 
   if (event.data) {
-    data = JSON.parse(event.data.text());
+    data = { ...data, ...JSON.parse(event.data.text()) };
   }
 
   event.waitUntil(self.registration.showNotification(data.title, data));
