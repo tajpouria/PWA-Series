@@ -18,6 +18,8 @@ const URL = APIs.newPost;
 export const Feed = ({ syncPost: SyncPost, toggleShow }: Props) => {
   const { values, handleChange } = useFormTracker({ title: "", location: "" });
 
+  const [fetchedValue, setFetchedValue] = React.useState(undefined);
+
   const videoRef = React.useRef() as React.RefObject<HTMLVideoElement>;
 
   const canvasRef = React.useRef() as React.RefObject<HTMLCanvasElement>;
@@ -90,6 +92,10 @@ export const Feed = ({ syncPost: SyncPost, toggleShow }: Props) => {
           />
         </label>
 
+        <Button onClick={handleFetchLocation} type="button">
+          FetchLocation
+        </Button>
+
         <Button>Submit</Button>
       </form>
     </div>
@@ -117,6 +123,31 @@ export const Feed = ({ syncPost: SyncPost, toggleShow }: Props) => {
       video.srcObject.getVideoTracks().forEach(track => track.stop());
 
       image.current = dataURItoBlob(canvas.toDataURL());
+    }
+  }
+
+  function handleFetchLocation(): void {
+    const showCannotFetchLocationAlert = () =>
+      alert("Cannot Fetch the location please set it manually!");
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          fetch(
+            `https://geocode.xyz/${position.coords.latitude},${position.coords.longitude}?geoit=json`
+          )
+            .then(res => res.json())
+            .then(res => setFetchedValue(res.city || "UNKNOWN"));
+        },
+        err => {
+          console.log(err); // message: "Network location provider at 'https://www.googleapis.com/' : No response received."
+
+          showCannotFetchLocationAlert();
+        },
+        { timeout: 7000 }
+      );
+    } else {
+      showCannotFetchLocationAlert();
     }
   }
 

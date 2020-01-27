@@ -47,7 +47,7 @@
     any
     natural
     landscape
-    landscape-primary 
+    landscape-primary
     landscape-secondary
     portrait
     portrait-primary
@@ -917,7 +917,7 @@ const Feed = () => {
 
 ### handling capture
 
-./Feed.tsxjk
+./Feed.ts
 
 ```tsx
 const Feed = () => {
@@ -951,6 +951,98 @@ const Feed = () => {
     </>
   );
 };
+```
+
+### Uploading images
+
+#### \<input type="file">
+
+./Feed.tsx
+
+```tsx
+const Feed = () => {
+  const image = React.useRef(undefined);
+
+  return (
+    <input
+      type="file"
+      onChange={e => {
+        const pic = e.target.files.length && image.target.files[0];
+        if (pic) image.current = pic;
+      }}
+    />
+  );
+
+  function handleSend() {
+    const formData = new FormDate();
+    formData.append("file", image.current, "image.png");
+  }
+};
+```
+
+#### \<canvas />
+
+./Feed.tsx
+
+```tsx
+const Feed = () => {
+  return <canvas />;
+
+  function handleCapture() {
+    // handling capture from video and draw from canvas context
+    image.current = dataURItoBlob(canvas.toDataURL());
+  }
+
+  function handleSend() {
+    const formData = new FormDate();
+    formData.append("file", image.current, "image.png");
+  }
+};
+
+function dataURItoBlob(dataURI: string) {
+  // convert base64 to raw binary data held in a string
+  const byteString = atob(dataURI.split(",")[1]);
+
+  // separate out the mime component
+  const mimeString = dataURI
+    .split(",")[0]
+    .split(":")[1]
+    .split(";")[0];
+
+  // write the bytes of the string to an ArrayBuffer
+  const ab = new ArrayBuffer(byteString.length);
+
+  // create a view into the buffer
+  const ia = new Uint8Array(ab);
+
+  // set the bytes of the buffer to the correct values
+  for (let i = 0; i < byteString.length; i += 1) {
+    ia[i] = byteString.charCodeAt(i);
+  }
+
+  // write the ArrayBuffer to a blob, and you're done
+  const blob = new Blob([ab], { type: mimeString });
+  return blob;
+}
+```
+
+### Geolocation
+
+```ts
+if ("geolocation" in navigator) {
+  navigator.geolocation.getCurrentPosition(
+    position => {
+      const lat = position.coords.latitude;
+      const lot = position.coords.longitude;
+    },
+    err => {
+      alert("Could not fetch the location, please enter manually!");
+    },
+    {
+      timeout: 7000 // How long wait for GPS signal
+    }
+  );
+}
 ```
 
 ### Sundry
