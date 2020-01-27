@@ -980,3 +980,27 @@ fetch("/article/formdata/post/user-avatar", {
   body: fromData
 });
 ```
+
+#### Blob https://medium.com/javascript-in-plain-english/javascript-blob-why-is-it-useful-20c372dfca00
+
+Blob means “Binary Large Object” and it’s an opaque representation of a chunk of bytes. Web Browsers implement a Blob object, which is responsible for holding data.
+
+- `size` returns the length in bytes of the content of the blob
+- `type` the MIME type associated with it
+
+```js
+const blob = new Blob(["foo", "bar"], { type: "text/plain" });
+console.log(blob.size); // 6
+console.log(blob.type); // text/plain
+
+const slicedBlob = blob.slice(2, 4);
+```
+
+As we have file:// URLs, referencing to a real file in a local filesystem. Similarly, we have blob:// URLs referencing to a blob. blob:// URLs can be used almost wherever we use regular URLs.
+
+A blob:// URL to a blob can be obtained using the createObjectURL object.
+
+```js
+const blob = new Blob();
+URL.createObjectURL(blob); // "blob:chrome-search://local-ntp/13a45124-681d-4f4b-9ff3-66d1685e0914"
+```

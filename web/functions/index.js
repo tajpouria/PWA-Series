@@ -17,21 +17,21 @@ admin.initializeApp(functions.config().firebase);
 exports.newPost = functions.https.onRequest((request, response) => {
   corse(request, response, async () => {
     try {
-      const { id, title, location, image } = request.body;
-
-      if (!id || !title || !location || !image) {
-        return response.status(400).send("Bad request!");
-      }
-
       const uid = uuid();
 
       const busboy = new Bosboy({ headers: request.headers });
-      let uploads;
+      let uploads = {};
       const fields = {};
 
       busboy.on("file", (fieldname, file, filename, encoding, mimetype) => {
-        const filePath = path.join(os.tmpdir());
+        console.log(
+          `File [${fieldname}] filename: ${filename}, encoding: ${encoding}, mimetype: ${mimetype}`
+        );
+
+        const filePath = path.join(os.tmpdir(), filename);
+
         uploads = { file: filePath, type: mimetype };
+
         file.pipe(fs.createWriteStream(filePath));
       });
 
@@ -51,69 +51,69 @@ exports.newPost = functions.https.onRequest((request, response) => {
 
       busboy.on("finish", () => {
         const bucket = admin.storage().bucket("pwa-gram-7c869.appspot.com");
-      });
 
-      bucket.upload(
-        uploads.file,
-        {
-          uploadType: "media",
-          metadata: {
+        bucket.upload(
+          uploads.file,
+          {
+            uploadType: "media",
             metadata: {
-              contentType: upload.type,
-              firebaseStorageDownloadTokens: uid
+              metadata: {
+                contentType: uploads.type,
+                firebaseStorageDownloadTokens: uid
+              }
             }
-          }
-        },
-        async (err, uploadedFile) => {
-          if (!err) {
-            await admin
-              .database()
-              .ref("/posts")
-              .push({
-                id: fields.id,
-                title: fields.title,
-                location: fields.location,
-                image:
-                  "https://firebasestorage.googleapis.com/v0/b/" +
-                  bucket.name +
-                  "/o/" +
-                  encodeURIComponent(uploadedFile.name) +
-                  "?alt=media&token=" +
-                  uid
+          },
+          async (err, uploadedFile) => {
+            if (!err) {
+              await admin
+                .database()
+                .ref("/posts")
+                .push({
+                  id: fields.id,
+                  title: fields.title,
+                  location: fields.location,
+                  image:
+                    "https://firebasestorage.googleapis.com/v0/b/" +
+                    bucket.name +
+                    "/o/" +
+                    encodeURIComponent(uploadedFile.name) +
+                    "?alt=media&token=" +
+                    uid
+                });
+
+              // handling push notification
+              webPush.setVapidDetails(
+                "mailto:tajpouria4@gmail.com",
+                PUBLIC_KEY,
+                PRIVATE_KEY
+              );
+
+              const subs = await admin
+                .database()
+                .ref("/subs")
+                .once("value");
+
+              subs.forEach(sub => {
+                pushConfig = sub.val();
+
+                webPush.sendNotification(
+                  pushConfig,
+                  JSON.stringify({
+                    title: "New Post!",
+                    body: `${title} on ${location}`,
+                    image,
+                    data: {
+                      url: "/help"
+                    }
+                  })
+                );
               });
 
-            // handling push notification
-            webPush.setVapidDetails(
-              "mailto:tajpouria4@gmail.com",
-              PUBLIC_KEY,
-              PRIVATE_KEY
-            );
-
-            const subs = await admin
-              .database()
-              .ref("/subs")
-              .once("value");
-
-            subs.forEach(sub => {
-              pushConfig = sub.val();
-
-              webPush.sendNotification(
-                pushConfig,
-                JSON.stringify({
-                  title: "New Post!",
-                  body: `${title} on ${location}`,
-                  image,
-                  data: {
-                    url: "/help"
-                  }
-                })
-              );
-            });
-
-            return response.status(201).json({ id: fields.id });
+              return response.status(201).json({ id: fields.id });
+            }
           }
-        }
-      );
+        );
+      });
 
       busboy.end(request.rawBody);
     } catch (err) {

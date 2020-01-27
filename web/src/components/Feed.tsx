@@ -61,6 +61,13 @@ export const Feed = ({ syncPost: SyncPost, toggleShow }: Props) => {
             />
           </Button>
         </div>
+
+        <Input
+          type="file"
+          style={{ display: !useCamera ? "block" : "none" }}
+          onChange={handleImageChange}
+        />
+
         <label htmlFor="title" className="input__label">
           Title
           <Input
@@ -110,6 +117,13 @@ export const Feed = ({ syncPost: SyncPost, toggleShow }: Props) => {
       video.srcObject.getVideoTracks().forEach(track => track.stop());
 
       image.current = dataURItoBlob(canvas.toDataURL());
+    }
+  }
+
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const pic = e.target.files && e.target.files[0];
+    if (pic) {
+      image.current = pic;
     }
   }
 
