@@ -89,32 +89,7 @@ workbox.routing.registerRoute(
       })
 );
 
-workbox.precaching.precacheAndRoute([
-  {
-    "url": "404.html",
-    "revision": "a4e2271d19eb1f6f93a15e1b7a4e74dd"
-  },
-  {
-    "url": "fallback.html",
-    "revision": "3fc92ff6cb20f81c185257532fccc327"
-  },
-  {
-    "url": "idborm.iife.js",
-    "revision": "118f2472eae68f396a86b949b4287ce5"
-  },
-  {
-    "url": "index.html",
-    "revision": "d1eb1eb98041f55f0eb0a6a59e60f357"
-  },
-  {
-    "url": "manifest.json",
-    "revision": "a099ab15b0f14e997add0b90b1e4e312"
-  },
-  {
-    "url": "sw-base.js",
-    "revision": "1cb7936781f8033677ea8751603671ac"
-  }
-]);
+workbox.precaching.precacheAndRoute([]);
 
 // BACKGROUND SYNCING
 self.addEventListener("sync", event => {

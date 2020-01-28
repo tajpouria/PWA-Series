@@ -70,14 +70,18 @@
     "@types/react-dom": "16.9.4",
     "@types/styled-components": "^4.4.2",
     "firebase-tools": "^7.12.1",
-    "typescript": "3.7.3"
+    "typescript": "3.7.3",
+    "workbox-cli": "^4.3.1"
   },
   "scripts": {
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
     "test": "node scripts/test.js --env=jsdom",
     "deploy": "firebase deploy --only functions",
-    "serve": "firebase serve --only functions"
+    "serve": "firebase serve --only functions",
+    "workbox:wizard": "workbox wizard",
+    "workbox:generateSW": "workbox generateSW workbox-config.js",
+    "workbox:injectManifest": "workbox injectManifest workbox-config.js"
   },
   "browserslist": [
     ">0.2%",
